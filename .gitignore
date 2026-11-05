@@ -218,3 +218,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# GOS Academy - original teaching materials and local RAG workspace
+# Keep user-supplied source DOCX/JSON/ZIP files outside source control.
+# Curated demo fixtures under data/samples/ remain tracked for repeatable tests.
+/data/raw/
+/data/incoming/
+/data/processed/
+/data/embeddings/
+/data/tmp/
+/GOS_Academy_Bo_tai_lieu_mau_gui_TTS_AI_Zalo.zip
