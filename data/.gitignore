@@ -1,0 +1,8 @@
+# Training materials may be private: never commit the supplied course files.
+raw/
+*.pdf
+*.docx
+*.xlsx
+*.xls
+*.zip
+!samples/
