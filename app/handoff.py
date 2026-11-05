@@ -1,4 +1,9 @@
-"""Day 3 extension: teacher support tickets and reviewed FAQ updates.
+"""Response text for a future persisted teacher ticket; does not claim a ticket was sent."""
 
-Never fabricate an answer for questions lacking authorized evidence.
-"""
+
+def insufficient_evidence_message() -> str:
+    return (
+        "Mình chưa tìm thấy đủ căn cứ trong học liệu của lớp để trả lời đầy đủ câu hỏi này. "
+        "Câu hỏi cần giảng viên xác nhận thêm."
+    )
+

@@ -6,3 +6,8 @@ raw/
 *.xls
 *.zip
 !samples/
+# Only labelled demo derivatives; raw supplied course files remain excluded.
+!samples/derived/*.pdf
+!samples/derived/*.docx
+!samples/derived/*.xlsx
+

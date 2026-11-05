@@ -70,6 +70,8 @@ class Event(Base):
     body: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING", server_default="PENDING")
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    # Client timestamp is preserved separately from the trusted server intake time.
+    source_received_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -104,3 +106,4 @@ class ModelUsage(Base):
     completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
     estimated_cost_usd: Mapped[float | None] = mapped_column(Numeric(12, 6))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+

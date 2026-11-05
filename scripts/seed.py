@@ -2,11 +2,7 @@
 from sqlalchemy import select
 from app.db import get_session_factory
 from app.models import Classroom, ChannelBinding
-
-DEMO_CLASSES = (
-    ("GS-KPI-01", "Google Sheets KPI Dashboard", "mock-google-sheets"),
-    ("AUTO-N8N-01", "AI Automation n8n", "mock-ai-automation"),
-)
+from app.mock_channel import DEMO_CLASSES
 
 
 def seed() -> None:
@@ -26,3 +22,4 @@ def seed() -> None:
 
 if __name__ == "__main__":
     seed()
+

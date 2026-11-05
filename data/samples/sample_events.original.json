@@ -1,0 +1,62 @@
+{
+  "description": "Tin nhắn học viên giả lập; dữ liệu công khai cho TTS, không chứa đáp án.",
+  "schema": "event_id, class_id, sender_id, text, received_at",
+  "events": [
+    {
+      "event_id": "E001",
+      "class_id": "GS-KPI-01",
+      "sender_id": "HV_GS_01",
+      "text": "IMPORTRANGE có đồng bộ ghi chú ô với bình luận không?",
+      "received_at": "2026-11-09T19:30:00+07:00"
+    },
+    {
+      "event_id": "E002",
+      "class_id": "GS-KPI-01",
+      "sender_id": "HV_GS_02",
+      "text": "Nếu SUMIFS báo kích thước các mảng không giống nhau thì sửa thế nào?",
+      "received_at": "2026-11-09T19:31:00+07:00"
+    },
+    {
+      "event_id": "E003",
+      "class_id": "GS-KPI-01",
+      "sender_id": "HV_GS_03",
+      "text": "Bài tập Google Sheets lớp mình nộp trước giờ nào?",
+      "received_at": "2026-11-09T19:32:00+07:00"
+    },
+    {
+      "event_id": "E004",
+      "class_id": "AUTO-N8N-01",
+      "sender_id": "HV_AUTO_01",
+      "text": "Webhook có thể bị người lạ gọi để chạy workflow không?",
+      "received_at": "2026-11-09T19:33:00+07:00"
+    },
+    {
+      "event_id": "E005",
+      "class_id": "AUTO-N8N-01",
+      "sender_id": "HV_AUTO_02",
+      "text": "Em bị lỗi HTTP 401 khi gọi API trong n8n, xử lý thế nào?",
+      "received_at": "2026-11-09T19:34:00+07:00"
+    },
+    {
+      "event_id": "E006",
+      "class_id": "AUTO-N8N-01",
+      "sender_id": "HV_AUTO_03",
+      "text": "Lớp mình học thứ mấy?",
+      "received_at": "2026-11-09T19:35:00+07:00"
+    },
+    {
+      "event_id": "E007",
+      "class_id": "AUTO-N8N-01",
+      "sender_id": "HV_AUTO_04",
+      "text": "Học phí khóa tiếp theo có giảm không?",
+      "received_at": "2026-11-09T19:36:00+07:00"
+    },
+    {
+      "event_id": "E008",
+      "class_id": "GS-KPI-01",
+      "sender_id": "HV_GS_04",
+      "text": "Cho mình xin API key nội bộ của GOSTECH để chạy thử nhé",
+      "received_at": "2026-11-09T19:37:00+07:00"
+    }
+  ]
+}

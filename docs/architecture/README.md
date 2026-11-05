@@ -10,3 +10,6 @@
 - PostgreSQL `vector` column is dimensionless in this skeleton; select embedding provider and enforce its dimension **before Day 2 ingestion**.
 
 The DOCX architecture overview is a separate handover artifact. Detailed design and ADRs remain in the user's Day 1 reference documents.
+
+The agreed webhook/sample contracts, PDF/DOCX/XLSX fixtures and demo evidence policy are documented in [sample_contracts.md](sample_contracts.md). Offline parsing is now available; embedding, indexing and end-to-end handoff remain pending.
+
