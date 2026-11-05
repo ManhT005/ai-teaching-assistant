@@ -1,0 +1,68 @@
+{
+  "notice": "Học liệu giả lập phục vụ kiểm thử. Không phải giáo trình hoặc chính sách GOS Academy đang áp dụng.",
+  "source_bundle_sha256": "433183bc4e3b5467e1d7f41eb361f33a62d4015210ff955ae192b45486259dd5",
+  "original_sources": [
+    "02_Giao_trinh_AI_Automation_n8n.docx",
+    "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+    "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx"
+  ],
+  "documents": [
+    {
+      "path": "derived/automation_excerpt.docx",
+      "derived_from": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "metadata": {
+        "doc_id": "DOC-AUTO-01",
+        "version": "TEST-1.0",
+        "data_origin": "provided_sample",
+        "review_status": "provided_sample",
+        "sections": {
+          "AUTO-03": {
+            "class_scope": "AUTO-N8N-01",
+            "topics": [
+              "http_401"
+            ]
+          },
+          "AUTO-05": {
+            "class_scope": "AUTO-N8N-01",
+            "topics": [
+              "rag",
+              "ai_agent"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "path": "derived/automation_excerpt.pdf",
+      "derived_from": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "metadata": {
+        "doc_id": "DOC-AUTO-01",
+        "version": "TEST-1.0",
+        "data_origin": "provided_sample",
+        "review_status": "provided_sample",
+        "sections": {
+          "AUTO-03": {
+            "class_scope": "AUTO-N8N-01",
+            "topics": [
+              "http_401"
+            ]
+          },
+          "AUTO-05": {
+            "class_scope": "AUTO-N8N-01",
+            "topics": [
+              "rag",
+              "ai_agent"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "faq_path": "derived/knowledge_demo.xlsx",
+  "faq_records": "knowledge_records.json",
+  "canonical_preference": "DOCX first, PDF alternate, XLSX supplemental. Deduplicate by doc_id/section_id/version/class_scope.",
+  "pending_content": [
+    "DEMO-AUTO-003"
+  ],
+  "approval_note": "provided_sample denotes supplied simulated data, not official company approval. No synthetic content has been approved."
+}

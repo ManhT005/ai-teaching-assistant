@@ -1,0 +1,13 @@
+# Training materials may be private: never commit the supplied course files.
+raw/
+*.pdf
+*.docx
+*.xlsx
+*.xls
+*.zip
+!samples/
+# Only labelled demo derivatives; raw supplied course files remain excluded.
+!samples/derived/*.pdf
+!samples/derived/*.docx
+!samples/derived/*.xlsx
+

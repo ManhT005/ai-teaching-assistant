@@ -1,0 +1,113 @@
+{
+  "notice": "Học liệu giả lập phục vụ kiểm thử. Không phải giáo trình hoặc chính sách GOS Academy đang áp dụng.",
+  "columns": [
+    "record_id",
+    "class_scope",
+    "question",
+    "answer",
+    "source_doc_id",
+    "source_section_id",
+    "version",
+    "data_origin",
+    "review_status",
+    "topics"
+  ],
+  "records": [
+    {
+      "record_id": "FAQ-GS-001",
+      "class_scope": "GS-KPI-01",
+      "question": "IMPORTRANGE có đồng bộ ghi chú và bình luận không?",
+      "answer": "IMPORTRANGE nhập giá trị/kết quả công thức từ vùng dữ liệu của một Google Sheets khác, không sao chép nguyên định dạng, ghi chú ô (note) hay nhận xét/bình luận (comment). Phải cấp quyền kết nối lần đầu. Khi cần đồng bộ ghi chú/nhận xét, cần xem xét Google Apps Script/API và quyền truy cập phù hợp, không dùng IMPORTRANGE đơn thuần.",
+      "source_doc_id": "DOC-GS-01",
+      "source_section_id": "GS-04",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "importrange"
+    },
+    {
+      "record_id": "FAQ-GS-002",
+      "class_scope": "GS-KPI-01",
+      "question": "SUMIFS báo kích thước mảng khác nhau thì làm sao?",
+      "answer": "Nếu ngày có cả giờ (timestamp), điều kiện trước ngày kết thúc +1 giúp bao trọn ngày cuối. Các vùng điều kiện của SUMIFS/COUNTIFS cần đồng kích thước; không trộn D2:D với A:A khi xảy ra lỗi kích thước mảng.",
+      "source_doc_id": "DOC-GS-01",
+      "source_section_id": "GS-02",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "sumifs"
+    },
+    {
+      "record_id": "FAQ-GS-003",
+      "class_scope": "GS-KPI-01",
+      "question": "Bài tập lớp Google Sheets nộp trước giờ nào?",
+      "answer": "Class ID: GS-KPI-01. Lịch học giả lập: thứ Ba và thứ Năm, 19:30–21:00. Bài tập sau buổi học cần nộp trước 22:00 Chủ nhật cùng tuần. Nội dung chính: chuẩn hóa dữ liệu, SUMIFS/COUNTIFS, KPI và Dashboard.",
+      "source_doc_id": "DOC-FAQ-01",
+      "source_section_id": "GS-CLASS-01",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "class_schedule"
+    },
+    {
+      "record_id": "FAQ-AUTO-001",
+      "class_scope": "AUTO-N8N-01",
+      "question": "Bài tập lớp Automation nộp trước giờ nào?",
+      "answer": "Class ID: AUTO-N8N-01. Lịch học giả lập: thứ Hai và thứ Tư, 19:30–21:00. Bài tập sau buổi học cần nộp trước 22:00 thứ Bảy cùng tuần. Nội dung chính: n8n, webhook, API, credentials, AI Agent và RAG.",
+      "source_doc_id": "DOC-FAQ-01",
+      "source_section_id": "AUTO-CLASS-01",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "class_schedule"
+    },
+    {
+      "record_id": "FAQ-COMMON-001",
+      "class_scope": "COMMON",
+      "question": "Khi hỏi lỗi thực hành nên gửi những thông tin nào?",
+      "answer": "Khi hỏi lỗi thực hành: gửi mô tả bước đang làm, tên công cụ, thông báo lỗi và ảnh đã che thông tin nhạy cảm. Không gửi mật khẩu, token, dữ liệu khách hàng thật hoặc file cấu hình bí mật.",
+      "source_doc_id": "DOC-FAQ-01",
+      "source_section_id": "COMMON-02",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "support_safety"
+    },
+    {
+      "record_id": "FAQ-COMMON-002",
+      "class_scope": "COMMON",
+      "question": "Khóa học tiếp theo có giảm học phí không?",
+      "answer": "Bộ dữ liệu giả lập KHÔNG có thông tin về mức học phí, giảm giá, hoàn phí, cấp chứng chỉ hoặc quyền lợi thương mại. AI phải nói chưa đủ dữ liệu và chuyển bộ phận tư vấn/giảng viên. Không đưa giá hoặc điều kiện không được công bố trong tài liệu.",
+      "source_doc_id": "DOC-FAQ-01",
+      "source_section_id": "COMMON-03",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "commercial_handoff"
+    },
+    {
+      "record_id": "FAQ-AUTO-002",
+      "class_scope": "AUTO-N8N-01",
+      "question": "Lỗi HTTP 401 trong n8n cần kiểm tra gì?",
+      "answer": "401 Unauthorized: thường cần kiểm tra thông tin xác thực (API key/token), header Authorization hoặc token hết hạn. Không đăng token lên nhóm học viên.",
+      "source_doc_id": "DOC-AUTO-01",
+      "source_section_id": "AUTO-03",
+      "version": "TEST-1.0",
+      "data_origin": "provided_sample",
+      "review_status": "provided_sample",
+      "topics": "http_401"
+    },
+    {
+      "record_id": "DEMO-AUTO-003",
+      "class_scope": "AUTO-N8N-01",
+      "question": "RAG khác Fine-tuning ở điểm nào?",
+      "answer": "RAG truy xuất tài liệu liên quan trong lúc xử lý câu hỏi rồi cung cấp ngữ cảnh cho mô hình trả lời. Fine-tuning tiếp tục huấn luyện để điều chỉnh trọng số mô hình theo dữ liệu huấn luyện, thường nhằm điều chỉnh hành vi hoặc cách thực hiện tác vụ. Fine-tuning không tự bảo đảm thông tin luôn mới hay câu trả lời có nguồn. Hai cách có thể kết hợp. Đây là nội dung mẫu do nhóm phát triển soạn, đang chờ duyệt cho demo.",
+      "source_doc_id": "DEMO-FAQ-AUTO-01",
+      "source_section_id": "DEMO-AUTO-003",
+      "version": "DEMO-DRAFT-1",
+      "data_origin": "synthetic_demo",
+      "review_status": "pending",
+      "topics": "rag_vs_finetuning"
+    }
+  ]
+}
