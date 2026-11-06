@@ -3,13 +3,11 @@
 import argparse
 import json
 
-from sqlalchemy import select
-
 from app.db import get_session_factory
-from app.embedding_contract import DIMENSION, MODEL_KEY
-from app.embeddings import EmbeddingService, validate_vector
-from app.models import Document, DocumentChunk
-from app.source_manifest import CLASS_CODES, ELIGIBLE_REVIEWS
+from app.embedding_contract import MODEL_KEY
+from app.embeddings import EmbeddingService
+from app.retrieval import dense_candidates
+from app.source_manifest import CLASS_CODES
 
 
 def search(session, authorized_class: str, query_vector: list[float], top_k: int = 3) -> list[dict]:
@@ -17,36 +15,23 @@ def search(session, authorized_class: str, query_vector: list[float], top_k: int
     if authorized_class not in CLASS_CODES or not 1 <= top_k <= 5:
         raise ValueError("Expected an authorized demo class and top-k between 1 and 5")
 
-    vector = validate_vector(query_vector)
-    distance = DocumentChunk.embedding.cosine_distance(vector).label("distance")
-    statement = (
-        select(
-            Document.logical_key.label("doc_id"),
-            DocumentChunk.section_id,
-            DocumentChunk.source_name,
-            DocumentChunk.locator,
-            Document.version,
-            Document.external_version,
-            DocumentChunk.class_scope,
-            distance,
-        )
-        .join(Document, Document.id == DocumentChunk.document_id)
-        .where(
-            Document.active.is_(True),
-            Document.index_status == "READY",
-            Document.revoked_at.is_(None),
-            Document.review_status.in_(ELIGIBLE_REVIEWS),
-            Document.embedding_model == MODEL_KEY,
-            Document.embedding_dimension == DIMENSION,
-            DocumentChunk.review_status.in_(ELIGIBLE_REVIEWS),
-            DocumentChunk.class_scope.in_((authorized_class, "COMMON")),
-            DocumentChunk.embedding.is_not(None),
-        )
-        .order_by(distance, DocumentChunk.id)
-        .limit(top_k)
-    )
-
-    return [dict(row) for row in session.execute(statement).mappings()]
+    return [
+        {
+            **candidate.chunk.model_dump(
+                include={
+                    "doc_id",
+                    "section_id",
+                    "source_name",
+                    "locator",
+                    "version",
+                    "external_version",
+                    "class_scope",
+                }
+            ),
+            "distance": candidate.score,
+        }
+        for candidate in dense_candidates(session, authorized_class, query_vector, top_k)
+    ]
 
 
 def main() -> None:
