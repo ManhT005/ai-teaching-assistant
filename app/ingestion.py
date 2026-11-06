@@ -1,8 +1,5 @@
-"""Offline parsers for curated demo fixtures. No embeddings, indexing or DB writes.
-
-Metadata is operator-controlled, never taken from a webhook or unreviewed upload.
-Index staging, activation and SQL class filtering remain Day 2 work.
-"""
+"""Source parsers with operator-controlled scope, review and provenance."""
+import hashlib
 from pathlib import Path
 import re
 from typing import Literal
@@ -33,6 +30,19 @@ class SourceMetadata(BaseModel):
     review_status: ReviewStatus
     sections: dict[str, SectionMetadata]
 
+    @model_validator(mode="after")
+    def validate_origin(self):
+        if self.data_origin == "synthetic_demo" and self.review_status == "provided_sample":
+            raise ValueError("Synthetic content cannot claim to be a supplied sample")
+        return self
+
+
+class SourceBlock(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    content: str
+    locator: str
+
 
 class KnowledgeChunk(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -47,6 +57,8 @@ class KnowledgeChunk(BaseModel):
     data_origin: DataOrigin
     review_status: ReviewStatus
     topics: tuple[str, ...] = ()
+    blocks: tuple[SourceBlock, ...] = ()
+    source_hash: str = ""
 
     @model_validator(mode="after")
     def validate_origin(self):
@@ -64,6 +76,8 @@ def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
     current: str | None = None
     text: list[str] = []
     locations: list[str] = []
+    seen: set[str] = set()
+    source_hash = hashlib.sha256(path.read_bytes()).hexdigest()
 
     def flush() -> None:
         if current is None:
@@ -76,6 +90,8 @@ def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
             locator="; ".join(dict.fromkeys(locations)),
             data_origin=metadata.data_origin, review_status=metadata.review_status,
             topics=section.topics,
+            source_hash=source_hash,
+            blocks=tuple(SourceBlock(content=line, locator=location) for line, location in zip(text, locations)),
         ))
 
     for line, locator in lines:
@@ -85,8 +101,11 @@ def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
         if heading:
             flush()
             current = heading.group(1)
+            if current in seen:
+                raise ValueError(f"Duplicate section heading: {current}")
             if current not in metadata.sections:
                 raise ValueError(f"Missing operator scope metadata for {current}")
+            seen.add(current)
             text, locations = [], []
         if current is not None:
             text.append(line.strip())
@@ -94,25 +113,53 @@ def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
     flush()
     if not chunks:
         raise ValueError(f"No supported section headings in {path.name}; OCR is not implemented")
+    missing = set(metadata.sections) - seen
+    if missing:
+        raise ValueError(f"Missing source sections: {sorted(missing)}")
     return chunks
 
 
-def parse_document(path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]:
-    """Parse text-based PDF or sectioned DOCX using explicit scope per section."""
-    path = Path(path)
+def parse_docx(path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]:
+    """Keep paragraph/table order and exact table row positions."""
     lines: list[tuple[str, str]] = []
-    if path.suffix.lower() == ".docx":
-        for index, block in enumerate(DocxDocument(path).iter_inner_content(), start=1):
-            if isinstance(block, Table):
-                lines.extend((" | ".join(cell.text for cell in row.cells), f"block {index}") for row in block.rows)
-            else:
-                lines.append((block.text, f"block {index}"))
-    elif path.suffix.lower() == ".pdf":
-        for page, item in enumerate(PdfReader(path).pages, start=1):
-            lines.extend((line, f"page {page}") for line in (item.extract_text() or "").splitlines())
-    else:
-        raise ValueError("Expected PDF or DOCX")
+    table_index = 0
+
+    for index, block in enumerate(DocxDocument(path).iter_inner_content(), start=1):
+        if isinstance(block, Table):
+            table_index += 1
+            lines.extend(
+                (" | ".join(cell.text for cell in row.cells), f"block {index} / table {table_index} / row {row_index}")
+                for row_index, row in enumerate(block.rows, start=1)
+            )
+        else:
+            lines.append((block.text, f"block {index}"))
+
     return _sections(lines, path, metadata)
+
+
+def parse_pdf(path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]:
+    """Read text PDFs; reject any scanned/empty page rather than silently omitting it."""
+    lines: list[tuple[str, str]] = []
+
+    for page, item in enumerate(PdfReader(path).pages, start=1):
+        text = item.extract_text() or ""
+
+        if not text.strip():
+            raise ValueError(f"Unsupported scanned/empty PDF page {page}; OCR is not implemented")
+
+        lines.extend((line, f"page {page}") for line in text.splitlines())
+
+    return _sections(lines, path, metadata)
+
+
+def parse_document(path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]:
+    path = Path(path)
+    parsers = {".docx": parse_docx, ".pdf": parse_pdf}
+
+    if path.suffix.lower() not in parsers:
+        raise ValueError("Expected PDF or DOCX")
+
+    return parsers[path.suffix.lower()](path, metadata)
 
 
 FAQ_COLUMNS = (
@@ -121,8 +168,11 @@ FAQ_COLUMNS = (
 )
 
 
-def parse_faq_xlsx(path: Path) -> list[KnowledgeChunk]:
-    """Read curated local rows. Uploaded rows cannot grant approval or class access."""
+def parse_faq_xlsx(
+    path: Path,
+    metadata_by_record: dict[str, SourceMetadata] | None = None,
+) -> list[KnowledgeChunk]:
+    """Legacy offline inspection accepts rows; indexing requires trusted row metadata."""
     workbook = load_workbook(path, read_only=True, data_only=False, keep_links=False)
     try:
         sheet = workbook["knowledge"]
@@ -152,7 +202,20 @@ def parse_faq_xlsx(path: Path) -> list[KnowledgeChunk]:
                 source_name=Path(path).name, locator=f"knowledge!row {row_number}; {row['record_id']}",
                 data_origin=row["data_origin"], review_status=row["review_status"],
                 topics=tuple(topic.strip() for topic in (row["topics"] or "").split(",") if topic.strip()),
+                source_hash=hashlib.sha256(Path(path).read_bytes()).hexdigest(),
             )
+            if metadata_by_record is not None:
+                trusted = metadata_by_record.get(chunk.record_id)
+                if trusted is None or chunk.section_id not in trusted.sections:
+                    raise ValueError(f"Missing operator scope metadata for FAQ {chunk.record_id}")
+
+                section = trusted.sections[chunk.section_id]
+                expected = (trusted.doc_id, trusted.version, section.class_scope, trusted.data_origin, trusted.review_status)
+                actual = (chunk.doc_id, chunk.version, chunk.class_scope, chunk.data_origin, chunk.review_status)
+                if actual != expected:
+                    raise ValueError(f"FAQ row metadata disagrees with trusted manifest: {chunk.record_id}")
+
+                chunk = chunk.model_copy(update={"topics": section.topics})
             if chunk.canonical_key in logical_keys:
                 raise ValueError("Use distinct source section IDs for distinct FAQ answers")
             result.append(chunk)
@@ -160,9 +223,14 @@ def parse_faq_xlsx(path: Path) -> list[KnowledgeChunk]:
             logical_keys.add(chunk.canonical_key)
         if not result:
             raise ValueError("FAQ workbook is empty")
+        if metadata_by_record is not None and identities != set(metadata_by_record):
+            raise ValueError("FAQ rows do not match trusted manifest")
         return result
     finally:
         workbook.close()
+
+
+parse_xlsx_faq = parse_faq_xlsx
 
 
 def eligible_demo_chunks(chunks: list[KnowledgeChunk], class_code: str) -> list[KnowledgeChunk]:
