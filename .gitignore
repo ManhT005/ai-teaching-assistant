@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local source materials and downloaded embedding models
+data/raw/
+.models/
