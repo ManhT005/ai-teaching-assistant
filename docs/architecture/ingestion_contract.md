@@ -42,3 +42,17 @@ re-ingesting identical revoked input cannot silently reactivate it.
 The smoke SQL requires an active READY document, eligible document and chunk
 review, the exact model revision and authorized class or COMMON before ordering
 by cosine distance. It is an operator diagnostic, not a student retrieval API.
+
+`approved_demo` requires an explicit human decision (`reviewer`, timezone-aware
+`reviewed_at`, `reason`) in trusted metadata. The document version retains this
+audit trail. The CLI cannot make a review decision. Pending remains pending.
+Representation-specific filenames are stored on chunks as well as on documents;
+a PDF page locator therefore still names the PDF when formats share a doc ID.
+
+If a manifest removes a section or reduces its scope/review eligibility, existing
+versions are revoked before embedding starts. An ordinary content update retains
+the previous version on failure. A process crash can leave an inactive STAGING
+version; the next ingest allocates a new version rather than exposing partial data.
+
+References: [E5 model card](https://huggingface.co/intfloat/multilingual-e5-small),
+[pgvector exact cosine search](https://github.com/pgvector/pgvector).

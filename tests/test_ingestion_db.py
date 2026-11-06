@@ -28,8 +28,8 @@ class FakeEmbedding:
 
     def encode_passages(self, texts):
         vectors = []
-        for text in texts:
-            raw = hashlib.shake_256(text.encode()).digest(DIMENSION)
+        for passage in texts:
+            raw = hashlib.shake_256(passage.encode()).digest(DIMENSION)
             values = [byte / 255 - 0.5 for byte in raw]
             norm = math.sqrt(sum(value * value for value in values))
             vectors.append([value / norm for value in values])
@@ -38,16 +38,28 @@ class FakeEmbedding:
 
 def section(content="GS-02 Tổng\nSUMIFS điều kiện ngày", **changes):
     fields = dict(
-        record_id="GS-02", doc_id="DOC-GS-01", section_id="GS-02", version="TEST-1.0",
-        class_scope="GS-KPI-01", content=content, source_name="sample.docx", locator="block 1",
-        source_hash=digest(content), data_origin="provided_sample", review_status="provided_sample",
+        record_id="GS-02",
+        doc_id="DOC-GS-01",
+        section_id="GS-02",
+        version="TEST-1.0",
+        class_scope="GS-KPI-01",
+        content=content,
+        source_name="sample.docx",
+        locator="block 1",
+        source_hash=digest(content),
+        data_origin="provided_sample",
+        review_status="provided_sample",
     )
     return KnowledgeChunk(**{**fields, **changes})
 
 
 @pytest.fixture
 def store(rag_engine):
-    return KnowledgeStore(sessionmaker(rag_engine, expire_on_commit=False), FakeEmbedding(), Settings(embedding_batch_size=1))
+    return KnowledgeStore(
+        sessionmaker(rag_engine, expire_on_commit=False),
+        FakeEmbedding(),
+        Settings(embedding_batch_size=1),
+    )
 
 
 def test_ingest_skip_reindex_and_internal_version_with_same_external_version(store):
@@ -101,7 +113,10 @@ def test_insert_failure_and_activation_validation_rollback(store, monkeypatch):
     def corrupt_content(*args):
         insert_batch(*args)
         with store.sessions.begin() as session:
-            session.execute(text("UPDATE document_chunks SET content = 'corrupt' WHERE document_id = :id"), {"id": args[0]})
+            session.execute(
+                text("UPDATE document_chunks SET content = 'corrupt' WHERE document_id = :id"),
+                {"id": args[0]},
+            )
 
     monkeypatch.setattr(store, "_insert_batch", corrupt_content)
 
@@ -110,6 +125,38 @@ def test_insert_failure_and_activation_validation_rollback(store, monkeypatch):
 
     assert [row["active"] for row in store.status()] == [True, False]
     assert store.status()[-1]["status"] == "FAILED"
+
+
+def test_activation_database_failure_restores_old_active_version(store):
+    store.ingest([section()])
+
+    with store.sessions.begin() as session:
+        session.execute(
+            text("""
+            CREATE FUNCTION reject_new_activation() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN
+                IF NEW.active AND NEW.version > 1 THEN
+                    RAISE EXCEPTION 'activation failure for rollback test';
+                END IF;
+                RETURN NEW;
+            END;
+            $$
+        """)
+        )
+        session.execute(
+            text("""
+            CREATE TRIGGER fail_activation BEFORE UPDATE ON documents
+            FOR EACH ROW EXECUTE FUNCTION reject_new_activation()
+        """)
+        )
+
+    with pytest.raises(RuntimeError, match="remains inactive"):
+        store.ingest([section("GS-02 Tổng\nVersion changed")])
+
+    rows = store.status()
+    assert [row["active"] for row in rows] == [True, False]
+    assert rows[1]["status"] == "FAILED"
+    assert rows[1]["stored_chunks"] == rows[1]["expected_chunks"]
 
 
 def test_pending_initial_and_review_demotion_never_remain_active(store):
@@ -149,7 +196,9 @@ def test_wrong_model_and_invalid_vectors_cannot_activate(store, monkeypatch):
         KnowledgeStore(store.sessions, store.embeddings)
 
     monkeypatch.setattr(store.embeddings, "model_id", MODEL_KEY)
-    monkeypatch.setattr(store.embeddings, "encode_passages", lambda texts: [[1, 0, 0] for _ in texts])
+    monkeypatch.setattr(
+        store.embeddings, "encode_passages", lambda texts: [[1, 0, 0] for _ in texts]
+    )
 
     with pytest.raises(RuntimeError):
         store.ingest([section()])
@@ -162,10 +211,19 @@ def test_database_rejects_duplicate_chunk_and_incompatible_model(store):
     result = store.ingest([section()])
 
     with pytest.raises(IntegrityError), store.sessions.begin() as session:
-        session.add(DocumentChunk(document_id=result["document_id"], chunk_index=0, class_scope="COMMON", content="duplicate"))
+        session.add(
+            DocumentChunk(
+                document_id=result["document_id"],
+                chunk_index=0,
+                class_scope="COMMON",
+                content="duplicate",
+            )
+        )
 
     with pytest.raises(IntegrityError), store.sessions.begin() as session:
-        session.add(Document(logical_key="other", source_name="x", version=1, embedding_model="wrong"))
+        session.add(
+            Document(logical_key="other", source_name="x", version=1, embedding_model="wrong")
+        )
 
 
 def test_approved_demo_requires_and_persists_review_audit(store):
@@ -176,7 +234,11 @@ def test_approved_demo_requires_and_persists_review_audit(store):
 
     from app.ingestion import ReviewDecision
 
-    decision = ReviewDecision(reviewer="test-reviewer", reviewed_at="2026-11-06T20:00:00+07:00", reason="In-memory approval test only")
+    decision = ReviewDecision(
+        reviewer="test-reviewer",
+        reviewed_at="2026-11-06T20:00:00+07:00",
+        reason="In-memory approval test only",
+    )
     result = store.ingest([approved.model_copy(update={"review_decision": decision})])
 
     with store.sessions() as session:

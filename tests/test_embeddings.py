@@ -6,7 +6,10 @@ from app.embedding_contract import DIMENSION, PASSAGE_PREFIX, QUERY_PREFIX
 from app.embeddings import EmbeddingService, validate_vector
 
 
-@pytest.mark.parametrize("vector", [[0.0] * DIMENSION, [1.0], [math.nan] * DIMENSION, [math.inf] * DIMENSION, [1.0] * DIMENSION])
+@pytest.mark.parametrize(
+    "vector",
+    [[0.0] * DIMENSION, [1.0], [math.nan] * DIMENSION, [math.inf] * DIMENSION, [1.0] * DIMENSION],
+)
 def test_invalid_vectors_are_rejected(vector):
     with pytest.raises(ValueError):
         validate_vector(vector)

@@ -30,7 +30,11 @@ def test_complete_original_sections_and_technical_content(originals):
     assert any("table 1 / row" in section.locator for section in originals)
     assert sections["GS-CLASS-01"].class_scope == "GS-KPI-01"
     assert sections["AUTO-CLASS-01"].class_scope == "AUTO-N8N-01"
-    assert all(section.class_scope == "COMMON" for key, section in sections.items() if key.startswith("COMMON-"))
+    assert all(
+        section.class_scope == "COMMON"
+        for key, section in sections.items()
+        if key.startswith("COMMON-")
+    )
     assert all(section.blocks and len(section.source_hash) == 64 for section in originals)
 
 

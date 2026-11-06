@@ -1,10 +1,10 @@
 """Bounded ingestion with short staging/activation transactions and urgent revoke."""
 
-from collections import defaultdict
-from datetime import datetime, timezone
 import hashlib
 import json
 import logging
+from collections import defaultdict
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select, text, update
 
@@ -15,7 +15,6 @@ from app.embeddings import validate_vector
 from app.ingestion import KnowledgeChunk
 from app.models import Document, DocumentChunk
 from app.source_manifest import ELIGIBLE_REVIEWS, PARSER_REVISION
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +48,16 @@ class KnowledgeStore:
 
     def ingest(self, sections: list[KnowledgeChunk], force: bool = False) -> dict:
         sections = [KnowledgeChunk.model_validate(section.model_dump()) for section in sections]
+
         if not sections:
             raise ValueError("Cannot ingest an empty logical document")
 
         logical_key = sections[0].doc_id
 
-        if any(section.doc_id != logical_key or section.version != sections[0].version for section in sections):
+        if any(
+            section.doc_id != logical_key or section.version != sections[0].version
+            for section in sections
+        ):
             raise ValueError("Ingest one logical document/external version at a time")
 
         identities = [section.canonical_key for section in sections]
@@ -64,7 +67,10 @@ class KnowledgeStore:
         if any(len(section.source_hash) != 64 for section in sections):
             raise ValueError("Every section requires a verified source checksum")
 
-        if any(section.review_status == "approved_demo" and section.review_decision is None for section in sections):
+        if any(
+            section.review_status == "approved_demo" and section.review_decision is None
+            for section in sections
+        ):
             raise ValueError("Demo approval requires an audited human review decision")
 
         eligible = [section for section in sections if section.review_status in ELIGIBLE_REVIEWS]
@@ -77,19 +83,27 @@ class KnowledgeStore:
             raise ValueError("A logical document must have one data origin")
 
         chunks = chunk_sections(
-            eligible, self.embeddings.tokenizer,
-            self.settings.chunk_target_tokens, self.settings.chunk_overlap_tokens,
+            eligible,
+            self.embeddings.tokenizer,
+            self.settings.chunk_target_tokens,
+            self.settings.chunk_overlap_tokens,
         )
         hashes = sorted({section.source_hash for section in sections})
         checksum = hashes[0] if len(hashes) == 1 else digest(json.dumps(hashes))
-        fingerprint = digest(json.dumps({
-            "model": MODEL_KEY,
-            "parser": PARSER_REVISION,
-            "target": self.settings.chunk_target_tokens,
-            "overlap": self.settings.chunk_overlap_tokens,
-            "sections": [section.model_dump(mode="json") for section in sections],
-            "chunks": [chunk.chunk_id for chunk in chunks],
-        }, sort_keys=True, ensure_ascii=False))
+        fingerprint = digest(
+            json.dumps(
+                {
+                    "model": MODEL_KEY,
+                    "parser": PARSER_REVISION,
+                    "target": self.settings.chunk_target_tokens,
+                    "overlap": self.settings.chunk_overlap_tokens,
+                    "sections": [section.model_dump(mode="json") for section in sections],
+                    "chunks": [chunk.chunk_id for chunk in chunks],
+                },
+                sort_keys=True,
+                ensure_ascii=False,
+            )
+        )
         stage = self._stage(logical_key, sections[0], chunks, checksum, fingerprint, force)
 
         if stage["status"] == "skipped":
@@ -101,7 +115,7 @@ class KnowledgeStore:
             batch_size = self.settings.embedding_batch_size
 
             for offset in range(0, len(chunks), batch_size):
-                batch = chunks[offset:offset + batch_size]
+                batch = chunks[offset : offset + batch_size]
                 # No session/transaction is held while the model runs.
                 vectors = self.embeddings.encode_passages([chunk.content for chunk in batch])
 
@@ -110,33 +124,63 @@ class KnowledgeStore:
 
                 vectors = [validate_vector(vector) for vector in vectors]
                 self._insert_batch(document_id, logical_key, offset, batch, vectors)
-                logger.info("staged doc_id=%s version=%s vectors=%s", logical_key, stage["version"], offset + len(batch))
+                logger.info(
+                    "staged doc_id=%s version=%s vectors=%s",
+                    logical_key,
+                    stage["version"],
+                    offset + len(batch),
+                )
 
             self._activate(document_id, logical_key, chunks)
 
         except Exception as error:
             self._fail(document_id, type(error).__name__)
             # Provider/DB exception messages can contain source content or SQL parameters.
-            raise RuntimeError(f"Ingestion failed for {logical_key}; staged version remains inactive") from None
+            raise RuntimeError(
+                f"Ingestion failed for {logical_key}; staged version remains inactive"
+            ) from None
 
         return {**stage, "status": "ready", "chunks": len(chunks), "checksum": checksum}
 
     def _stage(self, logical_key, source, chunks, checksum, fingerprint, force):
         with self.sessions.begin() as session:
             _lock(session, logical_key)
-            history = list(session.scalars(select(Document).where(Document.logical_key == logical_key).order_by(Document.version)))
+            history = list(
+                session.scalars(
+                    select(Document)
+                    .where(Document.logical_key == logical_key)
+                    .order_by(Document.version)
+                )
+            )
 
-            if any(document.index_status == "REVOKED" and document.index_fingerprint == fingerprint for document in history):
-                raise ValueError("Identical revoked input cannot be reactivated; review a new source/version")
+            if any(
+                document.index_status == "REVOKED" and document.index_fingerprint == fingerprint
+                for document in history
+            ):
+                raise ValueError(
+                    "Identical revoked input cannot be reactivated; review a new source/version"
+                )
 
             active = next((document for document in history if document.active), None)
 
             if active and active.index_fingerprint == fingerprint and not force:
-                return {"doc_id": logical_key, "document_id": active.id, "version": active.version, "status": "skipped", "chunks": active.expected_chunks}
+                return {
+                    "doc_id": logical_key,
+                    "document_id": active.id,
+                    "version": active.version,
+                    "status": "skipped",
+                    "chunks": active.expected_chunks,
+                }
 
             # Scope removals/review demotions take effect immediately, even if embedding fails.
             if active:
-                previous_scopes = set(session.execute(select(DocumentChunk.section_id, DocumentChunk.class_scope).where(DocumentChunk.document_id == active.id)))
+                previous_scopes = set(
+                    session.execute(
+                        select(DocumentChunk.section_id, DocumentChunk.class_scope).where(
+                            DocumentChunk.document_id == active.id
+                        )
+                    )
+                )
                 incoming_scopes = {(chunk.section_id, chunk.class_scope) for chunk in chunks}
 
                 if not previous_scopes <= incoming_scopes:
@@ -155,7 +199,9 @@ class KnowledgeStore:
                 checksum=checksum,
                 active=False,
                 index_status="STAGING",
-                review_status="approved_demo" if any(chunk.review_status == "approved_demo" for chunk in chunks) else "provided_sample",
+                review_status="approved_demo"
+                if any(chunk.review_status == "approved_demo" for chunk in chunks)
+                else "provided_sample",
                 data_origin=chunks[0].data_origin,
                 embedding_model=MODEL_KEY,
                 embedding_dimension=DIMENSION,
@@ -163,14 +209,23 @@ class KnowledgeStore:
                 index_fingerprint=fingerprint,
                 expected_chunks=len(chunks),
                 review_audit=[
-                    {"section_id": chunk.section_id, **chunk.review_decision.model_dump(mode="json")}
-                    for chunk in chunks if chunk.review_decision is not None
+                    {
+                        "section_id": chunk.section_id,
+                        **chunk.review_decision.model_dump(mode="json"),
+                    }
+                    for chunk in chunks
+                    if chunk.review_decision is not None
                 ],
             )
             session.add(document)
             session.flush()
 
-            return {"doc_id": logical_key, "document_id": document.id, "version": version, "status": "staging"}
+            return {
+                "doc_id": logical_key,
+                "document_id": document.id,
+                "version": version,
+                "status": "staging",
+            }
 
     def _insert_batch(self, document_id, logical_key, offset, chunks, vectors):
         with self.sessions.begin() as session:
@@ -181,36 +236,46 @@ class KnowledgeStore:
                 raise ValueError("Staged document was revoked or superseded")
 
             for index, (chunk, vector) in enumerate(zip(chunks, vectors), start=offset):
-                session.add(DocumentChunk(
-                    document_id=document_id,
-                    chunk_index=index,
-                    section_chunk_index=chunk.chunk_index,
-                    chunk_id=chunk.chunk_id,
-                    section_id=chunk.section_id,
-                    class_scope=chunk.class_scope,
-                    content=chunk.content,
-                    source_name=chunk.source_name,
-                    page_or_section=chunk.section_id,
-                    locator=chunk.locator,
-                    content_hash=chunk.content_hash,
-                    source_checksum=chunk.source_hash,
-                    review_status=chunk.review_status,
-                    data_origin=chunk.data_origin,
-                    topics=list(chunk.topics),
-                    token_count=chunk.token_count,
-                    embedding=vector,
-                ))
+                session.add(
+                    DocumentChunk(
+                        document_id=document_id,
+                        chunk_index=index,
+                        section_chunk_index=chunk.chunk_index,
+                        chunk_id=chunk.chunk_id,
+                        section_id=chunk.section_id,
+                        class_scope=chunk.class_scope,
+                        content=chunk.content,
+                        source_name=chunk.source_name,
+                        page_or_section=chunk.section_id,
+                        locator=chunk.locator,
+                        content_hash=chunk.content_hash,
+                        source_checksum=chunk.source_hash,
+                        review_status=chunk.review_status,
+                        data_origin=chunk.data_origin,
+                        topics=list(chunk.topics),
+                        token_count=chunk.token_count,
+                        embedding=vector,
+                    )
+                )
 
     def _activate(self, document_id: int, logical_key: str, expected: list[IndexedChunk]):
         with self.sessions.begin() as session:
             _lock(session, logical_key)
             document = session.get(Document, document_id)
-            latest_version = session.scalar(select(func.max(Document.version)).where(Document.logical_key == logical_key))
+            latest_version = session.scalar(
+                select(func.max(Document.version)).where(Document.logical_key == logical_key)
+            )
 
             if document.index_status != "STAGING" or document.version != latest_version:
                 raise ValueError("Staged document was revoked or superseded")
 
-            stored = list(session.scalars(select(DocumentChunk).where(DocumentChunk.document_id == document_id).order_by(DocumentChunk.chunk_index)))
+            stored = list(
+                session.scalars(
+                    select(DocumentChunk)
+                    .where(DocumentChunk.document_id == document_id)
+                    .order_by(DocumentChunk.chunk_index)
+                )
+            )
 
             if len(stored) != len(expected) or document.expected_chunks != len(expected):
                 raise ValueError("Staged chunk count mismatch")
@@ -232,7 +297,11 @@ class KnowledgeStore:
 
                 validate_vector(actual.embedding)
 
-            session.execute(update(Document).where(Document.logical_key == logical_key, Document.active.is_(True)).values(active=False))
+            session.execute(
+                update(Document)
+                .where(Document.logical_key == logical_key, Document.active.is_(True))
+                .values(active=False)
+            )
             session.flush()
             document.index_status = "READY"
             document.indexed_at = _now()
@@ -252,9 +321,16 @@ class KnowledgeStore:
 
         with self.sessions.begin() as session:
             _lock(session, logical_key)
-            result = session.execute(update(Document).where(Document.logical_key == logical_key).values(
-                active=False, index_status="REVOKED", revoked_at=_now(), revocation_reason=reason,
-            ))
+            result = session.execute(
+                update(Document)
+                .where(Document.logical_key == logical_key)
+                .values(
+                    active=False,
+                    index_status="REVOKED",
+                    revoked_at=_now(),
+                    revocation_reason=reason,
+                )
+            )
 
             return result.rowcount
 
@@ -262,13 +338,25 @@ class KnowledgeStore:
         with self.sessions() as session:
             return [
                 {
-                    "doc_id": document.logical_key, "document_id": document.id,
-                    "version": document.version, "external_version": document.external_version,
-                    "active": document.active, "status": document.index_status,
-                    "review": document.review_status, "expected_chunks": document.expected_chunks,
-                    "stored_chunks": session.scalar(select(func.count()).select_from(DocumentChunk).where(DocumentChunk.document_id == document.id)),
-                    "model": document.embedding_model, "dimension": document.embedding_dimension,
-                    "checksum": document.checksum, "failure_code": document.failure_code,
+                    "doc_id": document.logical_key,
+                    "document_id": document.id,
+                    "version": document.version,
+                    "external_version": document.external_version,
+                    "active": document.active,
+                    "status": document.index_status,
+                    "review": document.review_status,
+                    "expected_chunks": document.expected_chunks,
+                    "stored_chunks": session.scalar(
+                        select(func.count())
+                        .select_from(DocumentChunk)
+                        .where(DocumentChunk.document_id == document.id)
+                    ),
+                    "model": document.embedding_model,
+                    "dimension": document.embedding_dimension,
+                    "checksum": document.checksum,
+                    "failure_code": document.failure_code,
                 }
-                for document in session.scalars(select(Document).order_by(Document.logical_key, Document.version))
+                for document in session.scalars(
+                    select(Document).order_by(Document.logical_key, Document.version)
+                )
             ]

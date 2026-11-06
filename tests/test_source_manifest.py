@@ -1,4 +1,3 @@
-import hashlib
 import json
 from pathlib import Path
 
@@ -10,14 +9,16 @@ from pypdf import PdfWriter
 from app.ingestion import SourceMetadata, parse_document, parse_faq_xlsx
 from app.source_manifest import SourceManifest, load_manifest
 
-
 SAMPLES = Path(__file__).resolve().parents[1] / "data/samples"
 
 
 def metadata():
     return SourceMetadata(
-        doc_id="DOC-GS-01", version="TEST-1.0", data_origin="provided_sample",
-        review_status="provided_sample", sections={"GS-01": {"class_scope": "GS-KPI-01"}},
+        doc_id="DOC-GS-01",
+        version="TEST-1.0",
+        data_origin="provided_sample",
+        review_status="provided_sample",
+        sections={"GS-01": {"class_scope": "GS-KPI-01"}},
     )
 
 
@@ -31,10 +32,10 @@ def test_docx_preserves_formula_table_order_and_precise_locators(tmp_path):
     doc.add_paragraph("Sau bảng")
     doc.save(path)
 
-    section, = parse_document(path, metadata())
+    (section,) = parse_document(path, metadata())
 
     assert section.content.index("SUMIFS") < section.content.index("Sau bảng")
-    assert 'D2:D;A2:A;' in section.content
+    assert "D2:D;A2:A;" in section.content
     assert section.blocks[1].locator == "block 2 / table 1 / row 1"
 
 
@@ -51,7 +52,9 @@ def test_scanned_pdf_and_missing_expected_section_fail(tmp_path):
     document = Document()
     document.add_paragraph("GS-01 heading")
     document.save(path)
-    trusted = metadata().model_copy(update={"sections": {**metadata().sections, "GS-02": metadata().sections["GS-01"]}})
+    trusted = metadata().model_copy(
+        update={"sections": {**metadata().sections, "GS-02": metadata().sections["GS-01"]}}
+    )
 
     with pytest.raises(ValueError, match="Missing source sections"):
         parse_document(path, trusted)
@@ -83,7 +86,9 @@ def test_xlsx_cannot_promote_pending_or_change_scope(tmp_path):
     records = parse_faq_xlsx(path)
     trusted = {
         record.record_id: SourceMetadata(
-            doc_id=record.doc_id, version=record.version, data_origin=record.data_origin,
+            doc_id=record.doc_id,
+            version=record.version,
+            data_origin=record.data_origin,
             review_status=record.review_status,
             sections={record.section_id: {"class_scope": record.class_scope}},
         )

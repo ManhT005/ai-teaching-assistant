@@ -9,7 +9,6 @@ from docx import Document
 
 from app.ingestion import SECTION_HEADING
 
-
 SOURCE_RULES = {
     "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx": (
         "DOC-GS-01",
@@ -48,7 +47,9 @@ def inventory(root: Path) -> tuple[list[dict], dict]:
                 for paragraph in document.paragraphs
                 if (match := SECTION_HEADING.match(paragraph.text.strip()))
             ]
-            item.update(paragraphs=len(document.paragraphs), tables=len(document.tables), sections=sections)
+            item.update(
+                paragraphs=len(document.paragraphs), tables=len(document.tables), sections=sections
+            )
 
         if path.name in SOURCE_RULES:
             doc_id, scopes = SOURCE_RULES[path.name]
@@ -56,17 +57,21 @@ def inventory(root: Path) -> tuple[list[dict], dict]:
             if set(item["sections"]) != set(scopes):
                 raise ValueError(f"Original section inventory changed: {path.name}")
 
-            sources.append({
-                "path": path.name,
-                "sha256": checksum,
-                "metadata": {
-                    "doc_id": doc_id,
-                    "version": "TEST-1.0",
-                    "data_origin": "provided_sample",
-                    "review_status": "provided_sample",
-                    "sections": {section: {"class_scope": scope} for section, scope in scopes.items()},
-                },
-            })
+            sources.append(
+                {
+                    "path": path.name,
+                    "sha256": checksum,
+                    "metadata": {
+                        "doc_id": doc_id,
+                        "version": "TEST-1.0",
+                        "data_origin": "provided_sample",
+                        "review_status": "provided_sample",
+                        "sections": {
+                            section: {"class_scope": scope} for section, scope in scopes.items()
+                        },
+                    },
+                }
+            )
 
         items.append(item)
 
@@ -90,7 +95,9 @@ def main() -> None:
         if args.write_manifest.exists():
             parser.error("Manifest exists; review it manually instead of overwriting decisions")
 
-        args.write_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        args.write_manifest.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
 
     print(json.dumps({"mode": "DEMO ONLY", "inventory": items}, ensure_ascii=True, indent=2))
 

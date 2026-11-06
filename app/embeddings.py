@@ -7,8 +7,13 @@ from functools import cached_property
 
 from app.config import Settings, get_settings
 from app.embedding_contract import (
-    DIMENSION, MAX_INPUT_TOKENS, MODEL_ID, MODEL_KEY, MODEL_REVISION,
-    PASSAGE_PREFIX, QUERY_PREFIX,
+    DIMENSION,
+    MAX_INPUT_TOKENS,
+    MODEL_ID,
+    MODEL_KEY,
+    MODEL_REVISION,
+    PASSAGE_PREFIX,
+    QUERY_PREFIX,
 )
 
 
@@ -49,7 +54,9 @@ class EmbeddingService:
                 trust_remote_code=False,
             )
         except Exception:
-            raise RuntimeError("E5 tokenizer unavailable; run python -m app.embeddings --download") from None
+            raise RuntimeError(
+                "E5 tokenizer unavailable; run python -m app.embeddings --download"
+            ) from None
 
     @cached_property
     def model(self):
@@ -65,9 +72,17 @@ class EmbeddingService:
                 trust_remote_code=False,
             )
         except Exception:
-            raise RuntimeError("E5 weights unavailable; run python -m app.embeddings --download") from None
+            raise RuntimeError(
+                "E5 weights unavailable; run python -m app.embeddings --download"
+            ) from None
 
-        if model.get_sentence_embedding_dimension() != DIMENSION or model.max_seq_length != MAX_INPUT_TOKENS:
+        dimension = (
+            model.get_embedding_dimension()
+            if hasattr(model, "get_embedding_dimension")
+            else model.get_sentence_embedding_dimension()
+        )
+
+        if dimension != DIMENSION or model.max_seq_length != MAX_INPUT_TOKENS:
             raise ValueError("Model does not match the fixed E5 embedding contract")
 
         return model
@@ -81,7 +96,10 @@ class EmbeddingService:
         if any(not text.strip() for text in texts):
             raise ValueError("Cannot embed empty text")
 
-        if any(len(self.tokenizer.encode(text, add_special_tokens=True)) > MAX_INPUT_TOKENS for text in prefixed):
+        if any(
+            len(self.tokenizer.encode(text, add_special_tokens=True)) > MAX_INPUT_TOKENS
+            for text in prefixed
+        ):
             raise ValueError("Embedding input exceeds the model token limit")
 
         vectors = self.model.encode(
@@ -106,13 +124,28 @@ class EmbeddingService:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--download", action="store_true", help="Allow downloading the pinned model into the local cache")
+    parser.add_argument(
+        "--download",
+        action="store_true",
+        help="Allow downloading the pinned model into the local cache",
+    )
     args = parser.parse_args()
     settings = get_settings().model_copy(update={"embedding_local_files_only": not args.download})
     service = EmbeddingService(settings)
-    vectors = service.encode_passages(["Công thức SUMIFS theo khoảng ngày", "Lỗi 401 khi gọi API trong n8n"])
+    vectors = service.encode_passages(
+        ["Công thức SUMIFS theo khoảng ngày", "Lỗi 401 khi gọi API trong n8n"]
+    )
 
-    print(json.dumps({"model": service.model_id, "dimension": service.dimension, "vectors": len(vectors), "device": "cpu"}))
+    print(
+        json.dumps(
+            {
+                "model": service.model_id,
+                "dimension": service.dimension,
+                "vectors": len(vectors),
+                "device": "cpu",
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

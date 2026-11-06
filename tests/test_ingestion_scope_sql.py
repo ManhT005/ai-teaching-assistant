@@ -1,12 +1,12 @@
 import pytest
 from sqlalchemy import select, update
 from sqlalchemy.orm import sessionmaker
+from test_ingestion_db import FakeEmbedding, section
 
 from app.config import Settings
 from app.knowledge_store import KnowledgeStore
 from app.models import Document, DocumentChunk
 from scripts.smoke_vector_search import search
-from test_ingestion_db import FakeEmbedding, section
 
 
 @pytest.fixture
@@ -31,7 +31,11 @@ def test_scope_review_and_inactive_filter_precedes_cosine_ranking(scoped_store):
 
     with store.sessions.begin() as session:
         gs_document = session.scalar(select(Document).where(Document.logical_key == "GS"))
-        session.execute(update(DocumentChunk).where(DocumentChunk.document_id == gs_document.id).values(review_status="pending"))
+        session.execute(
+            update(DocumentChunk)
+            .where(DocumentChunk.document_id == gs_document.id)
+            .values(review_status="pending")
+        )
 
     with store.sessions() as session:
         assert {hit["doc_id"] for hit in search(session, "GS-KPI-01", vector, 5)} == {"SHARED"}

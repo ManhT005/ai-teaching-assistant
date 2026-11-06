@@ -1,7 +1,8 @@
 """Source parsers with operator-controlled scope, review and provenance."""
+
 import hashlib
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Literal
 
 from docx import Document as DocxDocument
@@ -83,7 +84,9 @@ class KnowledgeChunk(BaseModel):
         return self.doc_id, self.section_id, self.version, self.class_scope
 
 
-def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]:
+def _sections(
+    lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
+) -> list[KnowledgeChunk]:
     chunks: list[KnowledgeChunk] = []
     current: str | None = None
     text: list[str] = []
@@ -95,17 +98,27 @@ def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
         if current is None:
             return
         section = metadata.sections[current]
-        chunks.append(KnowledgeChunk(
-            record_id=current, doc_id=metadata.doc_id, section_id=current,
-            version=metadata.version, class_scope=section.class_scope,
-            content="\n".join(text), source_name=path.name,
-            locator="; ".join(dict.fromkeys(locations)),
-            data_origin=metadata.data_origin, review_status=metadata.review_status,
-            topics=section.topics,
-            source_hash=source_hash,
-            review_decision=metadata.review_decision,
-            blocks=tuple(SourceBlock(content=line, locator=location) for line, location in zip(text, locations)),
-        ))
+        chunks.append(
+            KnowledgeChunk(
+                record_id=current,
+                doc_id=metadata.doc_id,
+                section_id=current,
+                version=metadata.version,
+                class_scope=section.class_scope,
+                content="\n".join(text),
+                source_name=path.name,
+                locator="; ".join(dict.fromkeys(locations)),
+                data_origin=metadata.data_origin,
+                review_status=metadata.review_status,
+                topics=section.topics,
+                source_hash=source_hash,
+                review_decision=metadata.review_decision,
+                blocks=tuple(
+                    SourceBlock(content=line, locator=location)
+                    for line, location in zip(text, locations)
+                ),
+            )
+        )
 
     for line, locator in lines:
         if not line.strip():
@@ -141,7 +154,10 @@ def parse_docx(path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]:
         if isinstance(block, Table):
             table_index += 1
             lines.extend(
-                (" | ".join(cell.text for cell in row.cells), f"block {index} / table {table_index} / row {row_index}")
+                (
+                    " | ".join(cell.text for cell in row.cells),
+                    f"block {index} / table {table_index} / row {row_index}",
+                )
                 for row_index, row in enumerate(block.rows, start=1)
             )
         else:
@@ -176,8 +192,16 @@ def parse_document(path: Path, metadata: SourceMetadata) -> list[KnowledgeChunk]
 
 
 FAQ_COLUMNS = (
-    "record_id", "class_scope", "question", "answer", "source_doc_id",
-    "source_section_id", "version", "data_origin", "review_status", "topics",
+    "record_id",
+    "class_scope",
+    "question",
+    "answer",
+    "source_doc_id",
+    "source_section_id",
+    "version",
+    "data_origin",
+    "review_status",
+    "topics",
 )
 
 
@@ -204,17 +228,26 @@ def parse_faq_xlsx(
                 raise ValueError(f"Formulas are not allowed in FAQ row {row_number}")
             row = dict(zip(header, values))
             for column in FAQ_COLUMNS:
-                if column != "topics" and (not isinstance(row[column], str) or not row[column].strip()):
+                if column != "topics" and (
+                    not isinstance(row[column], str) or not row[column].strip()
+                ):
                     raise ValueError(f"Missing text field {column} in row {row_number}")
             if row["record_id"] in identities:
                 raise ValueError(f"Duplicate FAQ ID: {row['record_id']}")
             chunk = KnowledgeChunk(
-                record_id=row["record_id"], doc_id=row["source_doc_id"],
-                section_id=row["source_section_id"], version=row["version"],
-                class_scope=row["class_scope"], content=f"Q: {row['question']}\nA: {row['answer']}",
-                source_name=Path(path).name, locator=f"knowledge!row {row_number}; {row['record_id']}",
-                data_origin=row["data_origin"], review_status=row["review_status"],
-                topics=tuple(topic.strip() for topic in (row["topics"] or "").split(",") if topic.strip()),
+                record_id=row["record_id"],
+                doc_id=row["source_doc_id"],
+                section_id=row["source_section_id"],
+                version=row["version"],
+                class_scope=row["class_scope"],
+                content=f"Q: {row['question']}\nA: {row['answer']}",
+                source_name=Path(path).name,
+                locator=f"knowledge!row {row_number}; {row['record_id']}",
+                data_origin=row["data_origin"],
+                review_status=row["review_status"],
+                topics=tuple(
+                    topic.strip() for topic in (row["topics"] or "").split(",") if topic.strip()
+                ),
                 source_hash=hashlib.sha256(Path(path).read_bytes()).hexdigest(),
             )
             if metadata_by_record is not None:
@@ -223,12 +256,28 @@ def parse_faq_xlsx(
                     raise ValueError(f"Missing operator scope metadata for FAQ {chunk.record_id}")
 
                 section = trusted.sections[chunk.section_id]
-                expected = (trusted.doc_id, trusted.version, section.class_scope, trusted.data_origin, trusted.review_status)
-                actual = (chunk.doc_id, chunk.version, chunk.class_scope, chunk.data_origin, chunk.review_status)
+                expected = (
+                    trusted.doc_id,
+                    trusted.version,
+                    section.class_scope,
+                    trusted.data_origin,
+                    trusted.review_status,
+                )
+                actual = (
+                    chunk.doc_id,
+                    chunk.version,
+                    chunk.class_scope,
+                    chunk.data_origin,
+                    chunk.review_status,
+                )
                 if actual != expected:
-                    raise ValueError(f"FAQ row metadata disagrees with trusted manifest: {chunk.record_id}")
+                    raise ValueError(
+                        f"FAQ row metadata disagrees with trusted manifest: {chunk.record_id}"
+                    )
 
-                chunk = chunk.model_copy(update={"topics": section.topics, "review_decision": trusted.review_decision})
+                chunk = chunk.model_copy(
+                    update={"topics": section.topics, "review_decision": trusted.review_decision}
+                )
             if chunk.canonical_key in logical_keys:
                 raise ValueError("Use distinct source section IDs for distinct FAQ answers")
             result.append(chunk)
@@ -250,8 +299,12 @@ def eligible_demo_chunks(chunks: list[KnowledgeChunk], class_code: str) -> list[
     """Scope and review gate before indexing/retrieval in DEMO mode only."""
     if class_code not in {"GS-KPI-01", "AUTO-N8N-01"}:
         raise ValueError("Unknown authorized class")
-    return [chunk for chunk in chunks if chunk.class_scope in {class_code, "COMMON"}
-            and chunk.review_status in {"provided_sample", "approved_demo"}]
+    return [
+        chunk
+        for chunk in chunks
+        if chunk.class_scope in {class_code, "COMMON"}
+        and chunk.review_status in {"provided_sample", "approved_demo"}
+    ]
 
 
 def deduplicate_sources(chunks: list[KnowledgeChunk]) -> list[KnowledgeChunk]:
@@ -263,4 +316,3 @@ def deduplicate_sources(chunks: list[KnowledgeChunk]) -> list[KnowledgeChunk]:
             result.append(chunk)
             seen.add(chunk.canonical_key)
     return result
-

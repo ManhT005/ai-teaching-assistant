@@ -2,14 +2,14 @@
 
 Lean MVP for a teaching assistant using **FastAPI + PostgreSQL/pgvector + a simulated Zalo webhook**.
 
-> **Status:** Day 1 skeleton with the sample-data contracts agreed on 2026-11-05. Health API, schema, seed, authenticated event intake, offline PDF/DOCX/XLSX parsers and a demo evidence gate are implemented. Embedding/indexing, retrieval, LLM answers, persisted teacher handoff, retries and reporting are **not implemented yet**. No real Zalo integration.
+> **Status:** Demo ingestion is implemented: trusted DOCX/PDF/XLSX sources, tokenizer-based chunks, pinned E5 CPU embeddings, PostgreSQL staging, atomic version activation, revoke and exact vector smoke search. Health API, seed and authenticated event intake remain available. Student retrieval API, LLM answers, persisted teacher handoff, retries and real Zalo integration remain future work.
 
 ## Architecture
 
 ```text
 Mock Zalo Webhook --> FastAPI (auth / class mapping / dedup) --> PostgreSQL
                                                               |
-Approved PDF/DOCX/FAQ --> Ingestion (Day 2) --> pgvector <--- RAG (Day 2-3)
+Reviewed PDF/DOCX/FAQ --> Ingestion --> pgvector <--- Future retrieval/generation
                                                               |
                                                  Answer / Teacher Ticket (Day 3)
 ```
@@ -68,13 +68,83 @@ The offline check parses 12 items, resolves them to 9 logical sections and repor
 
 CI runs migrations, repeatable seeding and webhook tests against PostgreSQL/pgvector. Locally, PostgreSQL tests require `TEST_DATABASE_URL` pointing to a **dedicated migrated test database**; otherwise those tests are reported as skipped.
 
+## Demo knowledge ingestion
+
+The original materials are **simulated test data**. `provided_sample` permits
+demo indexing; it is not approval of production policy. Keep all five supplied
+files in ignored `data/raw/`. The guide and event JSON are excluded from indexing.
+
+```powershell
+# Create a local whitelist with explicit section scopes and verified checksums.
+python -m scripts.inspect_sources --write-manifest data/raw/manifest.local.json
+
+# Download the pinned E5 revision once; subsequent commands use the local cache.
+python -m app.embeddings --download
+alembic upgrade head
+
+# Inspect uses the cached tokenizer; it does not load weights or access the DB.
+python -m scripts.ingest_knowledge inspect --manifest data/raw/manifest.local.json
+python -m scripts.ingest_knowledge ingest --manifest data/raw/manifest.local.json
+python -m scripts.ingest_knowledge ingest --manifest data/raw/manifest.local.json
+python -m scripts.ingest_knowledge status
+
+# Operator-only diagnostics; class arguments are not a student authorization API.
+python -m scripts.smoke_vector_search --class AUTO-N8N-01 --query "Em chạy n8n bị lỗi 401 Unauthorized"
+python -m scripts.smoke_vector_search --class GS-KPI-01 --query "IMPORTRANGE có đồng bộ ghi chú và bình luận không?"
+
+# Immediate revocation, including staged versions. Identical revoked input stays blocked.
+python -m scripts.ingest_knowledge revoke --doc-id DOC-AUTO-01 --reason "Operator withdrawal"
+```
+
+The second ingest skips unchanged input. To rebuild unchanged eligible input, add
+`--force`. After changing a source file, review the file, update its SHA-256 in the
+local manifest and update its external version when appropriate. Internal numeric
+versions increase even when the external label remains `TEST-1.0`. Never edit
+source course content merely to satisfy the parser.
+
+Only `provided_sample` and audited `approved_demo` content receives embeddings.
+`pending` stays excluded. The tool has no automatic approval command. An explicit
+`approved_demo` manifest decision requires `review_decision` with `reviewer`,
+timezone-aware `reviewed_at` and `reason`; these decisions are stored with the
+document version. XLSX indexing requires trusted metadata for every record;
+worksheet cells cannot promote review or change scope.
+
+Embedding uses `intfloat/multilingual-e5-small` at revision
+`614241f622f53c4eeff9890bdc4f31cfecc418b3`, 384 dimensions, CPU, normalized vectors
+and separate passage/query prefixes. Default chunks target 320 input tokens with
+up to 40 tokens of overlap, including heading/prefix/special tokens. Model/cache
+configuration is in `.env.example`; weights remain under ignored `.models/`.
+There is no fallback model. Missing cached files cause a clear failure.
+
+Migrations `0003` and `0004` preserve Day 1 tables. Legacy documents are disabled
+until reviewed/reindexed; incompatible legacy vectors make migration fail
+transactionally. Back up a populated database first. Downgrading removes review
+metadata and disables documents; it does not restore the old searchable index.
+
+For local acceptance after preparing a dedicated test database:
+
+```powershell
+# Set TEST_DATABASE_URL to a test database; never use a production database.
+$env:ORIGINAL_SOURCES_MANIFEST = 'data/raw/manifest.local.json'
+$env:RUN_LIVE_EMBEDDING = '1'
+python -m pytest -q --basetemp=.pytest_cache/test-work
+```
+
+CI runs deterministic tests and real PostgreSQL 17 integration without downloading
+model weights. Original-source and live-model checks are explicitly opt-in.
+See the [ingestion contract](docs/architecture/ingestion_contract.md) and
+[recorded acceptance results](docs/testing/rag-ingestion-acceptance.md).
+
 ## Project map
 
 - `app/main.py` — API entrypoint
 - `app/api/` — health, readiness and mock webhook
 - `app/models.py` — class, channel mapping, documents, chunks, events, answers, tickets and usage
 - `app/db.py` — one SQLAlchemy connection/session setup
-- `app/ingestion.py` — offline parsers, class/review filtering and canonical deduplication
+- `app/ingestion.py`, `app/source_manifest.py` — parsers, trusted source metadata and canonical deduplication
+- `app/chunking.py`, `app/embeddings.py` — token-aware section chunks and pinned E5 CPU vectors
+- `app/knowledge_store.py` — staging, idempotency, atomic activation and revocation
+- `scripts/ingest_knowledge.py`, `scripts/smoke_vector_search.py` — operator CLI and scoped SQL diagnostic
 - `app/rag.py`, `app/handoff.py` — evidence contract and response text; processing remains Day 2–3 work
 - `alembic/` — versioned database migration, including pgvector extension
 - `scripts/seed.py` — seed two demo classes and mock group bindings

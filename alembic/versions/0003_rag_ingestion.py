@@ -4,11 +4,10 @@ Legacy rows are retained but disabled pending a complete reindex/review. Existin
 non-384 vectors cause a transactional failure; they are never discarded.
 """
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB
+from alembic import op
 from pgvector.sqlalchemy import Vector
-
+from sqlalchemy.dialects.postgresql import JSONB
 
 revision = "0003_rag_ingestion"
 down_revision = "0002_source_received_at"
@@ -20,7 +19,9 @@ MODEL_KEY = "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc4
 
 def upgrade() -> None:
     # The cast checks legacy dimensions before any lifecycle state is changed.
-    op.alter_column("document_chunks", "embedding", type_=Vector(384), postgresql_using="embedding::vector(384)")
+    op.alter_column(
+        "document_chunks", "embedding", type_=Vector(384), postgresql_using="embedding::vector(384)"
+    )
 
     document_columns = [
         sa.Column("external_version", sa.String(120)),
@@ -41,7 +42,9 @@ def upgrade() -> None:
     for column in document_columns:
         op.add_column("documents", column)
 
-    op.execute("UPDATE documents SET active = false, index_status = 'FAILED', failure_code = 'LEGACY_REINDEX_REQUIRED'")
+    op.execute(
+        "UPDATE documents SET active = false, index_status = 'FAILED', failure_code = 'LEGACY_REINDEX_REQUIRED'"
+    )
 
     chunk_columns = [
         sa.Column("section_id", sa.String(120)),
@@ -59,7 +62,13 @@ def upgrade() -> None:
     for column in chunk_columns:
         op.add_column("document_chunks", column)
 
-    op.create_index("uq_document_active", "documents", ["logical_key"], unique=True, postgresql_where=sa.text("active"))
+    op.create_index(
+        "uq_document_active",
+        "documents",
+        ["logical_key"],
+        unique=True,
+        postgresql_where=sa.text("active"),
+    )
     checks = {
         "documents": {
             "ck_document_index_status": "index_status IN ('STAGING', 'READY', 'FAILED', 'REVOKED')",
@@ -94,10 +103,37 @@ def downgrade() -> None:
 
     op.drop_index("uq_document_active", table_name="documents")
 
-    for column in ("section_id", "section_chunk_index", "chunk_id", "locator", "content_hash", "source_checksum", "review_status", "data_origin", "topics", "token_count"):
+    for column in (
+        "section_id",
+        "section_chunk_index",
+        "chunk_id",
+        "locator",
+        "content_hash",
+        "source_checksum",
+        "review_status",
+        "data_origin",
+        "topics",
+        "token_count",
+    ):
         op.drop_column("document_chunks", column)
 
-    for column in ("external_version", "data_origin", "review_status", "index_status", "embedding_model", "embedding_dimension", "parser_revision", "index_fingerprint", "expected_chunks", "indexed_at", "failure_code", "revoked_at", "revocation_reason"):
+    for column in (
+        "external_version",
+        "data_origin",
+        "review_status",
+        "index_status",
+        "embedding_model",
+        "embedding_dimension",
+        "parser_revision",
+        "index_fingerprint",
+        "expected_chunks",
+        "indexed_at",
+        "failure_code",
+        "revoked_at",
+        "revocation_reason",
+    ):
         op.drop_column("documents", column)
 
-    op.alter_column("document_chunks", "embedding", type_=Vector(), postgresql_using="embedding::vector")
+    op.alter_column(
+        "document_chunks", "embedding", type_=Vector(), postgresql_using="embedding::vector"
+    )

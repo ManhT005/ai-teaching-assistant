@@ -1,13 +1,13 @@
 """Real pgvector integration in disposable schemas of a dedicated test database."""
 
-from contextlib import contextmanager
 import os
+from contextlib import contextmanager
 from uuid import uuid4
 
+import pytest
 from alembic import command
 from alembic.config import Config
-import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.schema import CreateSchema, DropSchema
 
@@ -33,6 +33,9 @@ def rag_database_factory():
         pytest.fail("Use a dedicated database whose name contains test or smoke")
 
     admin = create_engine(url)
+
+    with admin.begin() as connection:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public"))
 
     @contextmanager
     def factory(revision="head"):

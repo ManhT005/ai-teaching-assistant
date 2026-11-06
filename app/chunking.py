@@ -34,7 +34,9 @@ def chunk_sections(
     result = []
 
     for section in sections:
-        blocks = list(section.blocks) or [SourceBlock(content=section.content, locator=section.locator)]
+        blocks = list(section.blocks) or [
+            SourceBlock(content=section.content, locator=section.locator)
+        ]
         heading = section.content.splitlines()[0]
 
         if count(heading) >= target_tokens - 8:
@@ -49,13 +51,17 @@ def chunk_sections(
             text = block.content
 
             if block_index == 0 and text.startswith(heading):
-                text = text[len(heading):].lstrip("\n")
+                text = text[len(heading) :].lstrip("\n")
 
             if not text:
                 continue
 
             # Keep short paragraphs, formulas, checklist entries and table rows intact.
-            pieces = [text] if count(heading + "\n" + text) <= target_tokens else re.split(r"(?<=[.!?])\s+|\n", text)
+            pieces = (
+                [text]
+                if count(heading + "\n" + text) <= target_tokens
+                else re.split(r"(?<=[.!?])\s+|\n", text)
+            )
 
             for piece in pieces:
                 while piece:
@@ -88,7 +94,11 @@ def chunk_sections(
 
                 for previous in reversed(current):
                     candidate = [previous, *overlap]
-                    overlap_count = len(tokenizer.encode("\n".join(part.content for part in candidate), add_special_tokens=False))
+                    overlap_count = len(
+                        tokenizer.encode(
+                            "\n".join(part.content for part in candidate), add_special_tokens=False
+                        )
+                    )
 
                     if overlap_count > overlap_tokens:
                         break
@@ -113,17 +123,26 @@ def chunk_sections(
                 raise ValueError("Chunk exceeds the model token limit")
 
             content_hash = digest(content)
-            identity = [section.doc_id, section.version, section.section_id, section.class_scope, index, content_hash]
+            identity = [
+                section.doc_id,
+                section.version,
+                section.section_id,
+                section.class_scope,
+                index,
+                content_hash,
+            ]
             locators = [blocks[0].locator, *(part.locator for part in group)]
-            result.append(IndexedChunk(
-                **section.model_dump(exclude={"blocks", "content", "locator"}),
-                blocks=tuple(group),
-                content=content,
-                locator="; ".join(dict.fromkeys(locators)),
-                chunk_index=index,
-                chunk_id=digest(json.dumps(identity, ensure_ascii=False)),
-                content_hash=content_hash,
-                token_count=token_count,
-            ))
+            result.append(
+                IndexedChunk(
+                    **section.model_dump(exclude={"blocks", "content", "locator"}),
+                    blocks=tuple(group),
+                    content=content,
+                    locator="; ".join(dict.fromkeys(locators)),
+                    chunk_index=index,
+                    chunk_id=digest(json.dumps(identity, ensure_ascii=False)),
+                    content_hash=content_hash,
+                    token_count=token_count,
+                )
+            )
 
     return result

@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       db:
-        image: pgvector/pgvector:pg16
+        image: pgvector/pgvector:pg17
         env:
           POSTGRES_DB: gos_test
           POSTGRES_USER: gos
@@ -27,6 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - run: pip install 'torch>=2,<3' --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r requirements.txt
       - run: alembic upgrade head
       - run: python -m scripts.seed

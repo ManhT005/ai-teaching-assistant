@@ -21,9 +21,14 @@ def search(session, authorized_class: str, query_vector: list[float], top_k: int
     distance = DocumentChunk.embedding.cosine_distance(vector).label("distance")
     statement = (
         select(
-            Document.logical_key.label("doc_id"), DocumentChunk.section_id,
-            DocumentChunk.source_name, DocumentChunk.locator, Document.version,
-            Document.external_version, DocumentChunk.class_scope, distance,
+            Document.logical_key.label("doc_id"),
+            DocumentChunk.section_id,
+            DocumentChunk.source_name,
+            DocumentChunk.locator,
+            Document.version,
+            Document.external_version,
+            DocumentChunk.class_scope,
+            distance,
         )
         .join(Document, Document.id == DocumentChunk.document_id)
         .where(
@@ -56,9 +61,16 @@ def main() -> None:
         with get_session_factory()() as session:
             hits = search(session, args.authorized_class, vector, args.top_k)
     except Exception as error:
-        parser.exit(1, f"{type(error).__name__}: vector smoke failed; check cached model and migrated database\n")
+        parser.exit(
+            1,
+            f"{type(error).__name__}: vector smoke failed; check cached model and migrated database\n",
+        )
 
-    print(json.dumps({"mode": "DEMO ONLY", "model": MODEL_KEY, "hits": hits}, ensure_ascii=True, indent=2))
+    print(
+        json.dumps(
+            {"mode": "DEMO ONLY", "model": MODEL_KEY, "hits": hits}, ensure_ascii=True, indent=2
+        )
+    )
 
 
 if __name__ == "__main__":

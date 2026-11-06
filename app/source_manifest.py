@@ -6,8 +6,13 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.ingestion import KnowledgeChunk, SourceMetadata, deduplicate_sources, parse_document, parse_faq_xlsx
-
+from app.ingestion import (
+    KnowledgeChunk,
+    SourceMetadata,
+    deduplicate_sources,
+    parse_document,
+    parse_faq_xlsx,
+)
 
 PARSER_REVISION = "gos-sections-v2"
 ELIGIBLE_REVIEWS = ("provided_sample", "approved_demo")

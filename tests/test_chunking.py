@@ -11,10 +11,18 @@ class CharacterTokenizer:
 
 def section(content, blocks=()):
     return KnowledgeChunk(
-        record_id="GS-02", doc_id="DOC-GS-01", section_id="GS-02", version="TEST-1.0",
-        class_scope="GS-KPI-01", content=content, source_name="course.docx",
-        locator="block 1", data_origin="provided_sample", review_status="provided_sample",
-        source_hash="a" * 64, blocks=blocks,
+        record_id="GS-02",
+        doc_id="DOC-GS-01",
+        section_id="GS-02",
+        version="TEST-1.0",
+        class_scope="GS-KPI-01",
+        content=content,
+        source_name="course.docx",
+        locator="block 1",
+        data_origin="provided_sample",
+        review_status="provided_sample",
+        source_hash="a" * 64,
+        blocks=blocks,
     )
 
 
@@ -28,7 +36,9 @@ def test_long_vietnamese_and_formula_keep_all_text_with_stable_ids():
     assert "".join(chunk.content.split("\n", 1)[1] for chunk in chunks) == body
     assert all(chunk.token_count <= 100 and chunk.locator and chunk.source_hash for chunk in chunks)
     assert [chunk.chunk_index for chunk in chunks] == list(range(len(chunks)))
-    assert chunks == chunk_sections([source], CharacterTokenizer(), target_tokens=100, overlap_tokens=0)
+    assert chunks == chunk_sections(
+        [source], CharacterTokenizer(), target_tokens=100, overlap_tokens=0
+    )
 
 
 def test_short_table_formula_is_atomic_and_locator_matches_group():
@@ -37,7 +47,9 @@ def test_short_table_formula_is_atomic_and_locator_matches_group():
         SourceBlock(content="A" * 55, locator="block 2"),
         SourceBlock(content="=SUMIFS(A:A;B:B;1) | 401", locator="block 3 / table 1 / row 2"),
     )
-    chunks = chunk_sections([section("\n".join(b.content for b in blocks), blocks)], CharacterTokenizer(), 90, 0)
+    chunks = chunk_sections(
+        [section("\n".join(b.content for b in blocks), blocks)], CharacterTokenizer(), 90, 0
+    )
 
     assert len(chunks) == 2
     assert "=SUMIFS(A:A;B:B;1) | 401" in chunks[1].content

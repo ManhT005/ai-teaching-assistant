@@ -1,9 +1,9 @@
 """Operator-only demo ingestion. Never accepts a student upload or class grant."""
 
 import argparse
-from collections import Counter
 import json
 import logging
+from collections import Counter
 from pathlib import Path
 
 from app.chunking import chunk_sections
@@ -18,8 +18,10 @@ def inspect_manifest(path: Path, embeddings: EmbeddingService) -> dict:
     sections = load_manifest(path)
     settings = embeddings.settings
     chunks = chunk_sections(
-        sections, embeddings.tokenizer,
-        settings.chunk_target_tokens, settings.chunk_overlap_tokens,
+        sections,
+        embeddings.tokenizer,
+        settings.chunk_target_tokens,
+        settings.chunk_overlap_tokens,
     )
 
     return {
@@ -31,9 +33,12 @@ def inspect_manifest(path: Path, embeddings: EmbeddingService) -> dict:
         "max_input_tokens": max(chunk.token_count for chunk in chunks),
         "sources": [
             {
-                "doc_id": section.doc_id, "section_id": section.section_id,
-                "scope": section.class_scope, "review": section.review_status,
-                "checksum": section.source_hash, "locator": section.locator,
+                "doc_id": section.doc_id,
+                "section_id": section.section_id,
+                "scope": section.class_scope,
+                "review": section.review_status,
+                "checksum": section.source_hash,
+                "locator": section.locator,
             }
             for section in sections
         ],
@@ -49,7 +54,9 @@ def main() -> None:
         subparser.add_argument("--manifest", type=Path, required=True)
 
         if command == "ingest":
-            subparser.add_argument("--force", action="store_true", help="Reindex unchanged eligible input")
+            subparser.add_argument(
+                "--force", action="store_true", help="Reindex unchanged eligible input"
+            )
 
     commands.add_parser("status")
     revoke = commands.add_parser("revoke", aliases=["deactivate"])
@@ -67,15 +74,23 @@ def main() -> None:
 
             if args.command == "ingest":
                 sections = load_manifest(args.manifest)
-                result = [store.ingest(group, force=args.force) for group in group_documents(sections)]
+                result = [
+                    store.ingest(group, force=args.force) for group in group_documents(sections)
+                ]
             elif args.command == "status":
                 result = store.status()
             else:
-                result = {"doc_id": args.doc_id, "revoked_versions": store.revoke(args.doc_id, args.reason)}
+                result = {
+                    "doc_id": args.doc_id,
+                    "revoked_versions": store.revoke(args.doc_id, args.reason),
+                }
 
     except Exception as error:
         # Keep raw source/SQL/provider messages out of terminal logs.
-        parser.exit(1, f"{type(error).__name__}: ingestion command failed; check manifest, cached model and database configuration\n")
+        parser.exit(
+            1,
+            f"{type(error).__name__}: ingestion command failed; check manifest, cached model and database configuration\n",
+        )
 
     print(json.dumps(result, ensure_ascii=True, indent=2))
 
