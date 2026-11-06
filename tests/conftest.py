@@ -12,13 +12,14 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.schema import CreateSchema, DropSchema
 
 
-def migrate(engine, revision="head"):
+def migrate(engine, revision="head", *, downgrade=False):
     config = Config("alembic.ini")
 
     with engine.connect() as connection:
         config.attributes["connection"] = connection
         config.attributes["version_table_schema"] = engine.rag_test_schema
-        command.upgrade(config, revision)
+        operation = command.downgrade if downgrade else command.upgrade
+        operation(config, revision)
 
 
 @pytest.fixture(scope="session")

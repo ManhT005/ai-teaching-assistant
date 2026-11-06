@@ -6,6 +6,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Computed,
     DateTime,
     ForeignKey,
     Index,
@@ -17,7 +18,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from app.embedding_contract import DIMENSION, MODEL_KEY
@@ -122,6 +123,7 @@ class DocumentChunk(Base):
     __tablename__ = "document_chunks"
     __table_args__ = (
         UniqueConstraint("document_id", "chunk_index", name="uq_document_chunk"),
+        Index("ix_document_chunks_search_vector_gin", "search_vector", postgresql_using="gin"),
         CheckConstraint(
             "class_scope IN ('GS-KPI-01', 'AUTO-N8N-01', 'COMMON')", name="ck_chunk_scope"
         ),
@@ -160,6 +162,10 @@ class DocumentChunk(Base):
     topics: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
     token_count: Mapped[int | None] = mapped_column(Integer)
     embedding = mapped_column(Vector(DIMENSION), nullable=True)
+    search_vector = mapped_column(
+        TSVECTOR(),
+        Computed("to_tsvector('simple'::regconfig, coalesce(content, ''))", persisted=True),
+    )
 
 
 class Event(Base):
