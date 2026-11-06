@@ -8,7 +8,8 @@ from app.models import Base
 config = context.config
 if config.config_file_name:
     fileConfig(config.config_file_name)
-url = get_settings().database_url
+provided_connection = config.attributes.get("connection")
+url = str(provided_connection.engine.url) if provided_connection is not None else get_settings().database_url
 if not url or "REPLACE_WITH_" in url:
     raise RuntimeError("Configure DATABASE_URL in .env before migrations")
 config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
@@ -22,6 +23,16 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    if provided_connection is not None:
+        context.configure(
+            connection=provided_connection,
+            target_metadata=target_metadata,
+            version_table_schema=config.attributes.get("version_table_schema"),
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+        return
+
     connectable = engine_from_config(config.get_section(config.config_ini_section, {}), prefix="sqlalchemy.", poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
