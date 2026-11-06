@@ -3,11 +3,12 @@
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.embedding_contract import DIMENSION, MODEL_KEY
 from app.embeddings import validate_vector
+from app.lexical_search import lexical_tsquery
 from app.models import ChannelBinding, Classroom, Document, DocumentChunk
 from app.source_manifest import CLASS_CODES, ELIGIBLE_REVIEWS
 
@@ -162,6 +163,30 @@ def dense_candidates(
         scoped_candidate_query(authorized_class)
         .add_columns(distance)
         .order_by(distance, DocumentChunk.id)
+        .limit(limit)
+    )
+
+    return candidate_rows(session, statement)
+
+
+def lexical_candidates(
+    session: Session,
+    authorized_class: str,
+    terms: tuple[str, ...],
+    limit: int = 10,
+) -> list[Candidate]:
+    validate_candidate_limit(limit)
+    statement = scoped_candidate_query(authorized_class)
+
+    if not terms:
+        return []
+
+    query = lexical_tsquery(terms)
+    rank = func.ts_rank_cd(DocumentChunk.search_vector, query).label("score")
+    statement = (
+        statement.add_columns(rank)
+        .where(DocumentChunk.search_vector.op("@@")(query))
+        .order_by(rank.desc(), DocumentChunk.id)
         .limit(limit)
     )
 
