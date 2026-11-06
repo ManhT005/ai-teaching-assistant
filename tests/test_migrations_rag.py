@@ -7,7 +7,7 @@ from conftest import migrate
 
 def test_fresh_schema_has_fixed_vector_and_lifecycle_constraints(rag_engine):
     with rag_engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0003_rag_ingestion"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0004_ingestion_provenance"
         vector_type = connection.scalar(text("""
             SELECT format_type(a.atttypid, a.atttypmod)
             FROM pg_attribute a

@@ -62,6 +62,7 @@ class Document(Base):
     failure_code: Mapped[str | None] = mapped_column(String(80))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revocation_reason: Mapped[str | None] = mapped_column(String(255))
+    review_audit: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -82,6 +83,7 @@ class DocumentChunk(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     page_or_section: Mapped[str | None] = mapped_column(String(120))
     section_id: Mapped[str | None] = mapped_column(String(120))
+    source_name: Mapped[str | None] = mapped_column(String(255))
     section_chunk_index: Mapped[int | None] = mapped_column(Integer)
     chunk_id: Mapped[str | None] = mapped_column(String(64))
     locator: Mapped[str | None] = mapped_column(Text)

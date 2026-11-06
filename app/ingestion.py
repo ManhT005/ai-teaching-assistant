@@ -7,7 +7,7 @@ from typing import Literal
 from docx import Document as DocxDocument
 from docx.table import Table
 from openpyxl import load_workbook
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 from pypdf import PdfReader
 
 ClassScope = Literal["GS-KPI-01", "AUTO-N8N-01", "COMMON"]
@@ -22,6 +22,14 @@ class SectionMetadata(BaseModel):
     topics: tuple[str, ...] = ()
 
 
+class ReviewDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    reviewer: str = Field(min_length=1)
+    reviewed_at: AwareDatetime
+    reason: str = Field(min_length=1)
+
+
 class SourceMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     doc_id: str = Field(min_length=1)
@@ -29,11 +37,14 @@ class SourceMetadata(BaseModel):
     data_origin: DataOrigin
     review_status: ReviewStatus
     sections: dict[str, SectionMetadata]
+    review_decision: ReviewDecision | None = None
 
     @model_validator(mode="after")
     def validate_origin(self):
         if self.data_origin == "synthetic_demo" and self.review_status == "provided_sample":
             raise ValueError("Synthetic content cannot claim to be a supplied sample")
+        if self.review_status == "approved_demo" and self.review_decision is None:
+            raise ValueError("Demo approval requires an explicit reviewer, timestamp and reason")
         return self
 
 
@@ -59,6 +70,7 @@ class KnowledgeChunk(BaseModel):
     topics: tuple[str, ...] = ()
     blocks: tuple[SourceBlock, ...] = ()
     source_hash: str = ""
+    review_decision: ReviewDecision | None = None
 
     @model_validator(mode="after")
     def validate_origin(self):
@@ -91,6 +103,7 @@ def _sections(lines: list[tuple[str, str]], path: Path, metadata: SourceMetadata
             data_origin=metadata.data_origin, review_status=metadata.review_status,
             topics=section.topics,
             source_hash=source_hash,
+            review_decision=metadata.review_decision,
             blocks=tuple(SourceBlock(content=line, locator=location) for line, location in zip(text, locations)),
         ))
 
@@ -215,7 +228,7 @@ def parse_faq_xlsx(
                 if actual != expected:
                     raise ValueError(f"FAQ row metadata disagrees with trusted manifest: {chunk.record_id}")
 
-                chunk = chunk.model_copy(update={"topics": section.topics})
+                chunk = chunk.model_copy(update={"topics": section.topics, "review_decision": trusted.review_decision})
             if chunk.canonical_key in logical_keys:
                 raise ValueError("Use distinct source section IDs for distinct FAQ answers")
             result.append(chunk)

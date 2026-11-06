@@ -64,6 +64,9 @@ def load_manifest(path: Path) -> list[KnowledgeChunk]:
         else:
             parsed = parse_document(source_path, source.metadata)
 
+        if any(section.source_hash != source.sha256 for section in parsed):
+            raise ValueError(f"Source changed during parsing: {source_path.name}")
+
         sections.extend(parsed)
 
     return deduplicate_sources(sections)
