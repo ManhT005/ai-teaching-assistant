@@ -33,5 +33,10 @@ jobs:
       - run: python -m scripts.seed
       - run: python -m scripts.seed
       - run: python -m scripts.check_sample_materials
-      - run: python -m pytest -q
+      - run: python -m pytest -q --junitxml=test-results.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postgres-17-test-results
+          path: test-results.xml
 

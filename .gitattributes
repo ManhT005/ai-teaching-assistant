@@ -1,0 +1,3 @@
+# Preserve frozen benchmark provenance across Windows/Linux checkouts.
+data/samples/retrieval_qrels.json text eol=lf
+docs/testing/hybrid-retrieval-benchmark.json text eol=lf
