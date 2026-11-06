@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "notice": "DEMO ONLY. Source-checked developer relevance labels, not company policy approval or an independent benchmark.",
+  "review": {
+    "reviewer": "Codex (automated implementation-author source review)",
+    "method": "Read all 26 original supplied sections and freeze these labels before the first hybrid quality measurement.",
+    "human_review_status": "not_performed",
+    "frozen_on": "2026-11-06",
+    "selection": "Technical anchors, paraphrases, schedules, shared guidance, multi-section relevance and no-evidence cases. No tuning against these questions."
+  },
+  "source_checksums": {
+    "DOC-GS-01": "59fd19dd401a2ad65960f536016420106edd96f239b28d06833d31a94292590e",
+    "DOC-AUTO-01": "8a8078ad32825192b5f8f4b3478ca870394ce67a20409798b4e22ad1b1f42bcc",
+    "DOC-FAQ-01": "88b92d7c1c9b95946abcdd6e3dd21065d9962b7d0a392689a86e2b61da0928d7"
+  },
+  "cases": [
+    {"id": "GS-01", "group_id": "mock-google-sheets", "question": "SUMIFS báo kích thước mảng khác nhau thì sửa thế nào?", "label": "answerable", "relevant_sections": ["GS-02", "GS-07", "GS-CLASS-02"], "rationale": "All three sections directly discuss equal sum/criteria ranges."},
+    {"id": "GS-02", "group_id": "mock-google-sheets", "question": "IMPORTRANGE có đồng bộ ghi chú và bình luận không?", "label": "answerable", "relevant_sections": ["GS-04", "GS-CLASS-02"], "rationale": "Course and class FAQ both state the notes/comments limitation."},
+    {"id": "GS-03", "group_id": "mock-google-sheets", "question": "COUNTIFS đếm đơn Thành công theo khoảng ngày như thế nào?", "label": "answerable", "relevant_sections": ["GS-02", "GS-07"], "rationale": "Formula section and exercise describe the same counting task."},
+    {"id": "GS-04", "group_id": "mock-google-sheets", "question": "Dùng EOMONTH và TODAY để lấy ngày đầu và cuối tháng trước ra sao?", "label": "answerable", "relevant_sections": ["GS-03"], "rationale": "The two previous-month formulas are given here."},
+    {"id": "GS-05", "group_id": "mock-google-sheets", "question": "Trong CRM, có được đếm lịch sử chuyển trạng thái như số khách hàng hiện tại không?", "label": "answerable", "relevant_sections": ["GS-05"], "rationale": "Current status and transition-history tables have different counting semantics."},
+    {"id": "GS-06", "group_id": "mock-google-sheets", "question": "KPI tỷ lệ chuyển đổi được tính theo công thức nào?", "label": "answerable", "relevant_sections": ["GS-06"], "rationale": "Defines conversion numerator, denominator and percentage."},
+    {"id": "GS-07", "group_id": "mock-google-sheets", "question": "Công thức doanh thu trả về 0 thì cần kiểm tra kiểu ngày, trạng thái và số tiền thế nào?", "label": "answerable", "relevant_sections": ["GS-07"], "rationale": "Contains the explicit zero-result troubleshooting checklist."},
+    {"id": "GS-08", "group_id": "mock-google-sheets", "question": "Đơn Hủy có được cộng vào doanh thu Thành công không?", "label": "answerable", "relevant_sections": ["GS-01", "GS-06", "GS-CLASS-02"], "rationale": "The data rules, KPI definition and FAQ all explicitly exclude cancelled orders."},
+    {"id": "GS-09", "group_id": "mock-google-sheets", "question": "Bài tập lớp Google Sheets phải nộp trước mấy giờ và ngày nào?", "label": "answerable", "relevant_sections": ["GS-CLASS-01", "GS-CLASS-02"], "rationale": "Class schedule and class FAQ give the simulated Sunday deadline."},
+    {"id": "GS-10", "group_id": "mock-google-sheets", "question": "Lớp Google Sheets học những ngày nào trong tuần?", "label": "answerable", "relevant_sections": ["GS-CLASS-01"], "rationale": "Contains the simulated Tuesday/Thursday schedule."},
+    {"id": "AUTO-01", "group_id": "mock-ai-automation", "question": "Em chạy n8n bị lỗi 401 Unauthorized", "label": "answerable", "relevant_sections": ["AUTO-03", "AUTO-09", "AUTO-CLASS-02"], "rationale": "HTTP error section, exercise and class FAQ all identify credential/authentication checks."},
+    {"id": "AUTO-02", "group_id": "mock-ai-automation", "question": "API trả 403 Forbidden thì cần kiểm tra role và scope thế nào?", "label": "answerable", "relevant_sections": ["AUTO-03"], "rationale": "Explicitly describes 403 permission checks."},
+    {"id": "AUTO-03", "group_id": "mock-ai-automation", "question": "Gặp 429 Too Many Requests có nên backoff hay retry vô hạn?", "label": "answerable", "relevant_sections": ["AUTO-03"], "rationale": "Rate limits, backoff and bounded retries are explained together."},
+    {"id": "AUTO-04", "group_id": "mock-ai-automation", "question": "Webhook Test khác Webhook Production ở điểm nào?", "label": "answerable", "relevant_sections": ["AUTO-02"], "rationale": "Defines test versus activated production workflow endpoints."},
+    {"id": "AUTO-05", "group_id": "mock-ai-automation", "question": "Người lạ biết URL webhook thì có gửi request kích hoạt được không?", "label": "answerable", "relevant_sections": ["AUTO-02", "AUTO-CLASS-02"], "rationale": "Both sources explain why endpoint secrecy is insufficient authentication."},
+    {"id": "AUTO-06", "group_id": "mock-ai-automation", "question": "Có được hardcode API key trong JSON workflow khi bàn giao không?", "label": "answerable", "relevant_sections": ["AUTO-04"], "rationale": "Explicit hardcoding prohibition and environment/secrets guidance."},
+    {"id": "AUTO-07", "group_id": "mock-ai-automation", "question": "Quy trình RAG từ tài liệu đến embedding và retrieval diễn ra thế nào?", "label": "answerable", "relevant_sections": ["AUTO-05"], "rationale": "Lists the document-to-retrieval sequence."},
+    {"id": "AUTO-08", "group_id": "mock-ai-automation", "question": "Vì sao AI Agent phải tách quyền trả lời với quyền thực hiện hành động?", "label": "answerable", "relevant_sections": ["AUTO-05"], "rationale": "Explicitly distinguishes answer and tool/action permissions."},
+    {"id": "AUTO-09", "group_id": "mock-ai-automation", "question": "Dùng event_id để tránh gửi phản hồi hai lần cho cùng sự kiện như thế nào?", "label": "answerable", "relevant_sections": ["AUTO-07", "AUTO-09"], "rationale": "Idempotency section and practical exercise both cover repeated events."},
+    {"id": "AUTO-10", "group_id": "mock-ai-automation", "question": "Khi API lỗi, tại sao cần giới hạn retry thay vì thử mãi?", "label": "answerable", "relevant_sections": ["AUTO-03", "AUTO-07"], "rationale": "Both require bounded retry and failure handling."},
+    {"id": "AUTO-11", "group_id": "mock-ai-automation", "question": "RAG có được lấy giáo trình Google Sheets để trả lời cho lớp Automation không?", "label": "answerable", "relevant_sections": ["AUTO-06"], "rationale": "Specifically explains isolation of technical materials between the two classes."},
+    {"id": "AUTO-12", "group_id": "mock-ai-automation", "question": "Bài tập lớp AI Automation n8n nộp trước mấy giờ và ngày nào?", "label": "answerable", "relevant_sections": ["AUTO-CLASS-01", "AUTO-CLASS-02"], "rationale": "Both give the simulated Saturday deadline."},
+    {"id": "COMMON-01", "group_id": "mock-google-sheets", "question": "Khi gửi ảnh lỗi thực hành em có cần che mật khẩu và token không?", "label": "answerable", "relevant_sections": ["COMMON-02"], "rationale": "Shared support checklist explicitly requires masking sensitive screenshots."},
+    {"id": "COMMON-02", "group_id": "mock-ai-automation", "question": "Giảng viên dự kiến xem yêu cầu được AI chuyển trong bao lâu?", "label": "answerable", "relevant_sections": ["COMMON-01"], "rationale": "Shared simulated one-working-day expectation, not a real SLA."},
+    {"id": "COMMON-03", "group_id": "mock-ai-automation", "question": "Em tìm link nộp bài ở đâu nếu bộ mẫu không có đường dẫn thật?", "label": "answerable", "relevant_sections": ["COMMON-02"], "rationale": "Shared guidance says to check pinned group announcements and ask the teacher."},
+    {"id": "COMMON-04", "group_id": "mock-google-sheets", "question": "Khi phản hồi AI có độ tin cậy thấp thì cần chuyển cho ai?", "label": "answerable", "relevant_sections": ["COMMON-04"], "rationale": "Lists low-confidence AI responses among teacher-escalation conditions."},
+    {"id": "NEG-01", "group_id": "mock-ai-automation", "question": "SUMIFS và COUNTIFS tính doanh thu theo ngày bằng công thức nào?", "label": "no_evidence", "relevant_sections": [], "rationale": "Technical formula evidence belongs to GS, outside this authorized class."},
+    {"id": "NEG-02", "group_id": "mock-google-sheets", "question": "Webhook Production n8n trả 401 Unauthorized thì cấu hình thế nào?", "label": "no_evidence", "relevant_sections": [], "rationale": "Technical n8n evidence belongs to AUTO, outside this authorized class."},
+    {"id": "NEG-03", "group_id": "mock-google-sheets", "question": "Học phí khóa học chính thức là bao nhiêu đồng và được hoàn mấy phần trăm?", "label": "no_evidence", "relevant_sections": [], "rationale": "COMMON-03 states the supplied materials do not contain actual prices/refund terms."},
+    {"id": "NEG-04", "group_id": "mock-ai-automation", "question": "RAG khác fine-tuning thế nào, khi nào nên chọn từng phương pháp?", "label": "no_evidence", "relevant_sections": [], "rationale": "AUTO-05 covers RAG only; the synthetic comparison FAQ is still pending and cannot supply comparison evidence."}
+  ]
+}

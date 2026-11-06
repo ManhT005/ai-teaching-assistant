@@ -122,7 +122,7 @@ def test_pending_revoked_and_old_versions_disappear_from_both_legs(hybrid):
         session.execute(
             update(DocumentChunk)
             .where(DocumentChunk.document_id == doc_id)
-            .values(review_status="pending")
+            .values(review_status="pending", data_origin="synthetic_demo")
         )
 
     pending = service.search("401 Unauthorized", context)
@@ -214,4 +214,51 @@ def test_normalization_preserves_formula_symbols_and_vietnamese():
     assert (
         normalize_question("  SUMIFS(A:A; B:B; 1)\n tiếng Việt  ")
         == "SUMIFS(A:A; B:B; 1) tiếng Việt"
+    )
+
+
+@pytest.mark.parametrize("code", ["GS-KPI-01", "AUTO-N8N-01"])
+def test_shared_common_sources_are_available_to_either_binding(hybrid, code):
+    service, _, contexts = hybrid
+    response = service.search("token", contexts[code])
+    assert any(hit.class_scope == "COMMON" for hit in response.hits)
+    assert any(hit.class_scope == "COMMON" for hit in response.diagnostics.lexical)
+
+
+def test_sql_looking_question_cannot_change_database_or_widen_scope(hybrid):
+    service, _, contexts = hybrid
+    result = service.search(
+        "401'); DROP TABLE documents; -- !SUMIFS & token:*", contexts["AUTO-N8N-01"]
+    )
+
+    assert result.diagnostics.lexical_terms == ("401", "sumifs", "token")
+    assert all(hit.class_scope in {"AUTO-N8N-01", "COMMON"} for hit in result.hits)
+    with service.sessions() as session:
+        assert session.scalar(select(Document.id).limit(1)) is not None
+
+
+def test_one_snapshot_prevents_metadata_drift_during_revoke(hybrid, monkeypatch):
+    import app.retrieval as retrieval
+
+    service, store, contexts = hybrid
+    context = contexts["AUTO-N8N-01"]
+    lexical = retrieval.lexical_candidates
+    revoked = False
+
+    def revoke_between_legs(*args, **kwargs):
+        nonlocal revoked
+        if not revoked:
+            store.revoke("AUTO", "withdrawal between dense and lexical queries")
+            revoked = True
+        return lexical(*args, **kwargs)
+
+    monkeypatch.setattr(retrieval, "lexical_candidates", revoke_between_legs)
+    in_flight = service.search("401 Unauthorized", context)
+    assert any(hit.doc_id == "AUTO" for hit in in_flight.diagnostics.dense)
+    assert any(hit.doc_id == "AUTO" for hit in in_flight.diagnostics.lexical)
+
+    after_revoke = service.search("401 Unauthorized", context)
+    assert not any(
+        hit.doc_id == "AUTO"
+        for hit in (*after_revoke.diagnostics.dense, *after_revoke.diagnostics.lexical)
     )
