@@ -1,7 +1,6 @@
 from dataclasses import replace
 
 import pytest
-from sqlalchemy.orm import sessionmaker
 
 from app.models import ChannelBinding, Classroom
 from app.retrieval import (
@@ -9,34 +8,6 @@ from app.retrieval import (
     resolve_authorized_scope,
     validate_authorized_scope,
 )
-
-
-@pytest.fixture
-def authorized_contexts(rag_engine):
-    sessions = sessionmaker(rag_engine, expire_on_commit=False)
-
-    with sessions.begin() as session:
-        gs = Classroom(code="GS-KPI-01", name="GS")
-        auto = Classroom(code="AUTO-N8N-01", name="AUTO")
-        session.add_all([gs, auto])
-        session.flush()
-        session.add_all(
-            [
-                ChannelBinding(channel="mock", group_id="mock-google-sheets", class_id=gs.id),
-                ChannelBinding(channel="mock", group_id="mock-ai-automation", class_id=auto.id),
-            ]
-        )
-
-    with sessions() as session:
-        contexts = {
-            code: resolve_authorized_scope(session, channel="mock", group_id=group)
-            for code, group in [
-                ("GS-KPI-01", "mock-google-sheets"),
-                ("AUTO-N8N-01", "mock-ai-automation"),
-            ]
-        }
-
-    return sessions, contexts
 
 
 def test_scope_comes_from_enabled_database_binding(authorized_contexts):

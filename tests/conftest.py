@@ -11,6 +11,9 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.schema import CreateSchema, DropSchema
 
+from app.models import ChannelBinding, Classroom
+from app.retrieval import resolve_authorized_scope
+
 
 def migrate(engine, revision="head", *, downgrade=False):
     config = Config("alembic.ini")
@@ -64,3 +67,33 @@ def rag_database_factory():
 def rag_engine(rag_database_factory):
     with rag_database_factory() as engine:
         yield engine
+
+
+@pytest.fixture
+def authorized_contexts(rag_engine):
+    from sqlalchemy.orm import sessionmaker
+
+    sessions = sessionmaker(rag_engine, expire_on_commit=False)
+
+    with sessions.begin() as session:
+        gs = Classroom(code="GS-KPI-01", name="GS")
+        auto = Classroom(code="AUTO-N8N-01", name="AUTO")
+        session.add_all([gs, auto])
+        session.flush()
+        session.add_all(
+            [
+                ChannelBinding(channel="mock", group_id="mock-google-sheets", class_id=gs.id),
+                ChannelBinding(channel="mock", group_id="mock-ai-automation", class_id=auto.id),
+            ]
+        )
+
+    with sessions() as session:
+        contexts = {
+            code: resolve_authorized_scope(session, channel="mock", group_id=group)
+            for code, group in [
+                ("GS-KPI-01", "mock-google-sheets"),
+                ("AUTO-N8N-01", "mock-ai-automation"),
+            ]
+        }
+
+    return sessions, contexts
