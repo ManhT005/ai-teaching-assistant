@@ -1,4 +1,4 @@
-"""Authenticated local mock event receiver; processing is a future milestone.
+"""Authenticated local mock event receiver; operators process stored events separately.
 
 This endpoint persists one accepted event before acknowledgement. It does NOT
 call an LLM, create a reply, or claim exactly-once external delivery.
@@ -69,5 +69,5 @@ def mock_event(
         return WebhookAck(status="duplicate", event_id=payload.event_id)
 
     response.status_code = status.HTTP_202_ACCEPTED
-    return WebhookAck(status="accepted", event_id=payload.event_id, detail="Stored; processing not implemented yet")
+    return WebhookAck(status="accepted", event_id=payload.event_id, detail="Stored; awaiting operator processing")
 
