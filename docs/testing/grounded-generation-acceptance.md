@@ -16,7 +16,7 @@ reviewer approval or official GOSTECH acceptance thresholds.
 | Generation/provider/event lint | PASS | Ruff over new modules, CLI, migration and generation tests |
 | Application formatting | PASS | `python -m ruff format --check app` |
 | Migration 0006 | PASS | Fresh schema, populated 0005, downgrade/upgrade, repeated upgrade, XOR concurrent writers |
-| Hosted GitHub Actions on this branch | NOT_RUN | Local commits only; hosted status is not claimed |
+| Hosted GitHub Actions on pushed HEAD `304204d` | PASS: 152 passed, 4 skipped, 0 failed | [Push CI run 42352761912](https://github.com/ManhT005/ai-teaching-assistant/actions/runs/42352761912), PostgreSQL 17 migrations and deterministic tests |
 | Independent reviewer approval | PENDING_REVIEW | ADR and developer labels require review |
 
 The four skips in the default full suite are the opt-in live Gemini test, opt-in
@@ -37,7 +37,7 @@ a workspace-local basetemp because the default Windows temp directory was denied
 | Scenario | Actual outcome | Result |
 | --- | --- | --- |
 | n8n HTTP 401 | ANSWERED, complete authentication quote with warning against posting tokens; AUTO-03 citation | PASS, deterministic and live Gemini |
-| RAG versus Fine-tuning | HANDOFF / INCOMPLETE_EVIDENCE; OPEN ticket; pending comparison unchanged | PASS |
+| RAG versus Fine-tuning | HANDOFF / INCOMPLETE_EVIDENCE; OPEN ticket; pending comparison unchanged | SAFE FALLBACK ONLY — full mandatory teaching-answer scenario not yet met because an approved comparison source is unavailable |
 | Tuition discount | HANDOFF / SENSITIVE_OR_POLICY; OPEN ticket; no price invented | PASS |
 | Feature outside the curriculum | HANDOFF / INCOMPLETE_EVIDENCE | PASS |
 | Same question from AUTO and GS | AUTO can answer; GS cannot cite AUTO; COMMON restricted by eligibility | PASS |
@@ -65,7 +65,7 @@ labels, embedding model and 384 dimensions were preserved.
 | GEN-T15 | Fake secret in provider error and secret question excluded from logs; Settings masks key; Gemini sends key only in header |
 | GEN-T17–T18 | Revoked binding blocks pipeline; terminal Answer/Handoff reruns preserve IDs, counts and attempts |
 | GEN-T19 | Malformed JSON, missing fields, extra fields and invalid types fail closed |
-| GEN-T20 | Local PostgreSQL migration/full regression pass; existing workflow runs fake tests without API keys; hosted execution pending |
+| GEN-T20 | Local PostgreSQL regression recorded; pushed-head hosted CI PASS with 152 passed / 4 skipped / 0 failed, deterministic embeddings and no live provider credentials |
 
 Negative tests accept no fabricated citations, foreign-class/pending/revoked
 sources or unsupported policy answers. These are assertions over the tested cases,
@@ -141,5 +141,7 @@ per test run. Remove that environment variable before the default offline suite.
   processor guarantees. Migration aborts on conflicting pre-existing outcomes.
 - Downgrading 0006 removes new audit columns and maps NULL usage to legacy zero to
   satisfy the old schema; events, answers, tickets and content are preserved.
-- Hosted CI, original source files and independent review remain external gates.
-  No push, PR, auto-merge, production deployment or outbound Zalo send is claimed.
+- Hosted CI passed for pushed implementation HEAD `304204d` (152 passed, 4 skipped).
+  The later documentation-only correction requires its own fresh CI before merge.
+  Original-source-file verification and independent review remain open gates.
+  No merge, production deployment or outbound Zalo send is claimed.
