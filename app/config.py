@@ -2,8 +2,9 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,6 +22,12 @@ class Settings(BaseSettings):
     retrieval_lexical_candidates: int = Field(default=10, ge=5, le=50)
     retrieval_max_lexical_terms: int = Field(default=6, ge=1, le=12)
     retrieval_rrf_k: int = Field(default=60, ge=1, le=1000)
+    llm_provider: Literal["fake", "gemini"] = "fake"
+    gemini_api_key: SecretStr | None = None
+    gemini_model: str = Field(default="", pattern=r"^[a-zA-Z0-9._-]*$")
+    llm_timeout_seconds: float = Field(default=20, gt=0, le=120)
+    llm_max_output_tokens: int = Field(default=2048, ge=256, le=4096)
+    llm_max_context_characters: int = Field(default=12000, ge=1000, le=24000)
 
 
 @lru_cache
