@@ -25,6 +25,17 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
 
+class EvidenceQuote(StrictModel):
+    quote_id: str = Field(pattern=r"^q[0-9]{3}$")
+    chunk_id: str = Field(min_length=1)
+    text: str = Field(min_length=20, max_length=2000)
+
+
+class AnswerSelection(StrictModel):
+    needs_handoff: bool
+    quote_ids: list[str] = Field(min_length=0, max_length=3)
+
+
 class Claim(StrictModel):
     text: str = Field(min_length=1, max_length=2000)
     citation_ids: list[str] = Field(min_length=1, max_length=3)
