@@ -17,7 +17,8 @@ when the provider supplies no token metadata; cost is unknown.
 The MVP supports **extractive grounded answers**, not unrestricted paraphrasing.
 The pre-gate requires every substantive question term in one eligible paragraph,
 with explicit handling of comparison, policy and unsafe requests. A provider may
-select only complete allowed quote units. The post-gate verifies exact quote
+select one complete allowed quote unit. Gemini receives dynamic enums for quote
+text and citation IDs. The post-gate verifies exact quote
 identity and citations and requires the answer body to equal the joined claims.
 This intentionally rejects paraphrases that cannot be verified by deterministic
 rules. It preserves negation and avoids treating lexical overlap as entailment.
@@ -36,7 +37,7 @@ both outcomes for the same event. Terminal reruns return the persisted result.
 Audit logs contain internal event ID, decision and reason, never raw prompts.
 
 States: PENDING, PROCESSING, ANSWERED, HANDOFF, FAILED_RETRYABLE, FAILED_FINAL.
-Reason codes and strict output schemas live in app/generation_contracts.py.
+Reason codes and strict output schemas live in app/generation/contracts.py.
 Policy questions use SENSITIVE_OR_POLICY; incomplete comparisons use
 INCOMPLETE_EVIDENCE. Invalid citations and unsupported claims fail closed.
 

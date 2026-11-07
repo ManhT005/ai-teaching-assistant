@@ -1,4 +1,5 @@
-"""Demo evidence contract. Retrieval SQL, semantic assessment and LLM calls are future work."""
+"""Legacy parser-only evidence helper; event orchestration lives in pipeline.py."""
+
 from dataclasses import dataclass
 
 from app.knowledge.ingestion import KnowledgeChunk, eligible_demo_chunks
@@ -12,8 +13,11 @@ class EvidenceDecision:
 
 
 def evaluate_demo_evidence(
-    chunks: list[KnowledgeChunk], *, authorized_class: str,
-    required_topics: set[str], relevance_verified: bool = False,
+    chunks: list[KnowledgeChunk],
+    *,
+    authorized_class: str,
+    required_topics: set[str],
+    relevance_verified: bool = False,
 ) -> EvidenceDecision:
     """Caller supplies verified requirements and relevance; topic labels alone are insufficient.
 
@@ -29,4 +33,3 @@ def evaluate_demo_evidence(
     if not relevance_verified:
         return EvidenceDecision("handoff", "RELEVANCE_NOT_VERIFIED")
     return EvidenceDecision("answer", "EVIDENCE_CHECKED", tuple(allowed))
-
