@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.config import Settings
-from app.generation.contracts import AnswerDraft, Claim
+from app.generation.contracts import AnswerDraft, AnswerSelection, Claim
 from app.llm.prompts import SYSTEM_PROMPT, user_payload
 from app.llm.provider import FakeLLM, GeminiLLM, ProviderFailure
 
@@ -26,7 +26,7 @@ def test_fake_is_deterministic_and_does_not_invent_usage():
     assert first == provider.generate("401", EVIDENCE)
     assert first.usage.prompt_tokens is None
     assert first.usage.completion_tokens is None
-    assert AnswerDraft.model_validate_json(first.text).claims[0].citation_ids == ["chunk-1"]
+    assert AnswerSelection.model_validate_json(first.text).quote_ids == ["q001"]
 
 
 def test_schema_rejects_missing_extra_and_coerced_fields():
@@ -54,9 +54,12 @@ def test_gemini_request_and_nullable_usage_contract():
         assert "private-test-key" not in str(request.url)
         assert body["systemInstruction"]["parts"][0]["text"] == SYSTEM_PROMPT
         assert body["generationConfig"]["responseJsonSchema"]["additionalProperties"] is False
-        assert body["generationConfig"]["responseJsonSchema"]["properties"]["answer_text"][
-            "enum"
-        ] == list(EVIDENCE["chunk-1"])
+        properties = body["generationConfig"]["responseJsonSchema"]["properties"]
+        assert set(properties) == {"needs_handoff", "quote_ids"}
+        assert properties["quote_ids"]["items"]["enum"] == ["q001"]
+        assert properties["quote_ids"]["maxItems"] == 3
+        payload = json.loads(body["contents"][0]["parts"][0]["text"])
+        assert payload["quotes"] == [{"quote_id": "q001", "text": EVIDENCE["chunk-1"][0]}]
         return httpx.Response(
             200,
             json={

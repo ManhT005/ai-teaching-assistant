@@ -38,12 +38,12 @@ class AnswerSelection(StrictModel):
 
 class Claim(StrictModel):
     text: str = Field(min_length=1, max_length=2000)
-    citation_ids: list[str] = Field(min_length=1, max_length=3)
+    citation_ids: list[str] = Field(min_length=1, max_length=1)
 
 
 class AnswerDraft(StrictModel):
     answer_text: str = Field(min_length=1, max_length=6000)
-    claims: list[Claim] = Field(min_length=1, max_length=8)
+    claims: list[Claim] = Field(min_length=1, max_length=3)
     needs_handoff: bool
 
 

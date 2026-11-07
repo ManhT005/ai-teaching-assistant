@@ -35,6 +35,7 @@ def add_event(sessions, scope, question="n8n 401 Unauthorized"):
 
 class CountingProvider(FakeLLM):
     def __init__(self, engine):
+        super().__init__()
         self.calls = 0
         self.engine = engine
         self.lock = Lock()
@@ -140,7 +141,7 @@ def test_provider_failure_and_invalid_drafts_do_not_publish(generation_system, c
     for text, reason in [
         ("not json", "UNSUPPORTED_CLAIM"),
         (
-            '{"answer_text":"x","claims":[{"text":"x","citation_ids":["fake"]}],"needs_handoff":false}',
+            '{"needs_handoff":false,"quote_ids":["fake"]}',
             "INVALID_CITATION",
         ),
     ]:

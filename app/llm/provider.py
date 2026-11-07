@@ -7,7 +7,8 @@ import httpx
 from pydantic import ValidationError
 
 from app.config import Settings
-from app.generation.contracts import AnswerDraft, Claim, ProviderResponse, Usage
+from app.generation.contracts import AnswerSelection, ProviderResponse, Usage
+from app.generation.evidence_catalog import CatalogError, catalog_from_units
 from app.llm.prompts import SYSTEM_PROMPT, user_payload
 
 
@@ -24,19 +25,19 @@ class LLMProvider(Protocol):
 class FakeLLM:
     """Deterministic selection of approved quote units, with truthful unknown usage."""
 
+    def __init__(self, *, max_quotes: int = 1):
+        if type(max_quotes) is not int or not 1 <= max_quotes <= 3:
+            raise ValueError("Fake selection accepts one to three quotes")
+        self.max_quotes = max_quotes
+
     def generate(self, question: str, evidence: dict[str, tuple[str, ...]]) -> ProviderResponse:
-        claims = [
-            Claim(text=text, citation_ids=[chunk_id])
-            for chunk_id, units in evidence.items()
-            for text in units
-        ][:1]
-        draft = AnswerDraft(
-            answer_text="\n".join(claim.text for claim in claims),
-            claims=claims,
-            needs_handoff=False,
+        catalog = catalog_from_units(evidence)
+        selection = AnswerSelection(
+            needs_handoff=not catalog.quotes,
+            quote_ids=[quote.quote_id for quote in catalog.quotes[: self.max_quotes]],
         )
         return ProviderResponse(
-            text=draft.model_dump_json(), usage=Usage(provider="fake", model="extractive-v1")
+            text=selection.model_dump_json(), usage=Usage(provider="fake", model="selection-v1")
         )
 
 
@@ -52,16 +53,16 @@ class GeminiLLM:
 
     def generate(self, question: str, evidence: dict[str, tuple[str, ...]]) -> ProviderResponse:
         settings = self.settings
-        schema = AnswerDraft.model_json_schema()
-        allowed_texts = list(dict.fromkeys(text for units in evidence.values() for text in units))
-        if not allowed_texts:
+        try:
+            catalog = catalog_from_units(evidence)
+        except CatalogError:
+            raise ProviderFailure(retryable=False) from None
+        if not catalog.quotes:
             raise ProviderFailure(retryable=False)
-        # Dynamic enums keep full quote text inside the provider's constrained output.
-        # The local validator still verifies the selected quote/citation pairing.
-        schema["properties"]["answer_text"]["enum"] = allowed_texts
-        schema["properties"]["claims"]["maxItems"] = 1
-        schema["$defs"]["Claim"]["properties"]["text"]["enum"] = allowed_texts
-        schema["$defs"]["Claim"]["properties"]["citation_ids"]["items"]["enum"] = list(evidence)
+        schema = AnswerSelection.model_json_schema()
+        schema["properties"]["quote_ids"]["items"]["enum"] = [
+            quote.quote_id for quote in catalog.quotes
+        ]
         body = {
             "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
             "contents": [{"role": "user", "parts": [{"text": user_payload(question, evidence)}]}],
