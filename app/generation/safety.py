@@ -13,9 +13,10 @@ UNSAFE_PATTERNS = (
     r"(?:ignore|override|disregard).{0,60}(?:instruction|policy|previous|system)",
     r"(?:bo qua|quen|ghi de).{0,60}(?:chi thi|chinh sach|quy tac|huong dan)",
     (
-        r"(?:reveal|print|show|expose|tiet lo|in ra|hien thi|gui).{0,60}"
+        r"(?:reveal|print|show|expose|tiet lo|in ra|hien thi).{0,60}"
         r"(?:system prompt|secret|api.?key|mat khau|token|khoa bi mat)"
     ),
+    r"(?<!khong )(?<!bao gio )\bgui.{0,60}(?:system prompt|secret|api.?key|mat khau|token)",
     r"(?:api[_-]?key|token|password|secret)\s*[:=]\s*['\"]?[a-z0-9_/-]{12,}",
     r"\b(?:sk-[a-z0-9_-]{16,}|AIza[a-z0-9_-]{20,})\b",
     r"<\s*/?\s*(?:system|assistant|developer)\b",

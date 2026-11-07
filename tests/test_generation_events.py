@@ -4,9 +4,9 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from generation_samples import TEXT
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
-from test_generation_grounding import TEXT, generation_system  # noqa: F401, F811
 
 from app.config import get_settings
 from app.db import get_db
@@ -174,6 +174,41 @@ def test_revoke_during_generation_prevents_answer_but_preserves_usage(generation
     with sessions() as session:
         assert session.scalar(select(func.count()).select_from(Answer)) == 0
         assert session.scalar(select(func.count()).select_from(Ticket)) == 0
+
+
+def test_binding_change_during_generation_blocks_finalization(generation_system):
+    sessions, contexts, _, pipeline = generation_system
+    scope = contexts["AUTO-N8N-01"]
+
+    class BindingChangingProvider(FakeLLM):
+        def generate(self, question, evidence):
+            with sessions.begin() as session:
+                session.get(ChannelBinding, scope.binding_id).class_id = contexts[
+                    "GS-KPI-01"
+                ].class_id
+            return super().generate(question, evidence)
+
+    pipeline.provider = BindingChangingProvider()
+    result = EventProcessor(sessions, pipeline).process_event(add_event(sessions, scope))
+    assert result.status == "FAILED_FINAL" and result.reason_code == "SCOPE_REVOKED"
+    assert result.model_usage is not None and not result.citations
+
+
+def test_invalid_question_and_class_mismatch_fail_without_pipeline(generation_system, monkeypatch):
+    sessions, contexts, _, pipeline = generation_system
+    scope = contexts["AUTO-N8N-01"]
+    processor = EventProcessor(sessions, pipeline)
+    monkeypatch.setattr(pipeline, "run", lambda *_: pytest.fail("Invalid event reached pipeline"))
+    for body in ("ordinary chat", "/hoi", "/hoi " + "x" * 1001):
+        event_id = add_event(sessions, scope)
+        with sessions.begin() as session:
+            session.get(Event, event_id).body = body
+        assert processor.process_event(event_id).reason_code == "INVALID_EVENT"
+
+    event_id = add_event(sessions, scope)
+    with sessions.begin() as session:
+        session.get(Event, event_id).class_id = contexts["GS-KPI-01"].class_id
+    assert processor.process_event(event_id).reason_code == "SCOPE_REVOKED"
 
 
 def test_atomic_claim_has_single_provider_call_and_terminal_outcome(generation_system):

@@ -54,6 +54,9 @@ def test_gemini_request_and_nullable_usage_contract():
         assert "private-test-key" not in str(request.url)
         assert body["systemInstruction"]["parts"][0]["text"] == SYSTEM_PROMPT
         assert body["generationConfig"]["responseJsonSchema"]["additionalProperties"] is False
+        assert body["generationConfig"]["responseJsonSchema"]["properties"]["answer_text"][
+            "enum"
+        ] == list(EVIDENCE["chunk-1"])
         return httpx.Response(
             200,
             json={
