@@ -18,7 +18,7 @@ UNSAFE_PATTERNS = (
     ),
     r"(?<!khong )(?<!bao gio )\bgui.{0,60}(?:system prompt|secret|api.?key|mat khau|token)",
     r"(?:api[_-]?key|token|password|secret)\s*[:=]\s*['\"]?[a-z0-9_/-]{12,}",
-    r"\b(?:sk-[a-z0-9_-]{16,}|AIza[a-z0-9_-]{20,})\b",
+    r"\b(?:sk-[a-z0-9_-]{16,}|aiza[a-z0-9_-]{20,})\b",
     r"<\s*/?\s*(?:system|assistant|developer)\b",
 )
 
