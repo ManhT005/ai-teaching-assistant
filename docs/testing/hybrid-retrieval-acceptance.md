@@ -3,9 +3,13 @@
 Executed on **2026-11-06**, Asia/Saigon, on `feature/rag-retrieval`, based on
 `origin/develop` commit `5e312b7` after ingestion PR #2 merged.
 
-Implementation and local verification: **PASS**. Hosted CI and independent human
-qrels review have not been performed. The measured hybrid ranking meets the
-provisional recall gates but is slightly worse than dense-only in aggregate.
+Implementation and local verification: **PASS**. Hosted CI also **PASS** on
+pushed commit `9a7c39a` ([smoke run](https://github.com/ManhT005/ai-teaching-assistant/actions/runs/42251367801)),
+with **126 passed, 3 skipped, 0 failed**. The three skips cover optional
+original-source/live-model checks; the local acceptance run enabled them.
+Independent human qrels review has **not** been performed. Measured hybrid
+ranking meets the provisional recall gates but is slightly worse than
+dense-only in aggregate.
 
 ## Environment and reproduction
 
@@ -38,10 +42,13 @@ seconds. This includes all Day 1 and ingestion regression tests. Original-source
 and real-model tests were explicitly enabled locally. CI runs deterministic
 retrieval tests and real PostgreSQL integration, without downloading E5 weights.
 
-The CI workflow now retains JUnit results as an artifact. Its hosted execution
-has not run for these local commits. Changed Python files pass Ruff checks and
-formatting at the repository's 100-character line length. No raw source files,
-model weights or credentials were committed.
+The CI workflow retains JUnit results as an artifact. The hosted push workflow
+passed on commit `9a7c39a` with PostgreSQL 17 migrations, repeatable seeding,
+fixture checks and 126 passing tests (3 optional tests skipped). CI uses
+deterministic embeddings and does not independently reproduce live E5/model-cache
+or original-source checks. Changed Python files were locally checked with Ruff
+and formatting at the repository's 100-character line length. No raw source
+files, model weights or credentials were committed.
 
 ## Frozen relevance dataset
 
@@ -157,7 +164,7 @@ This is not a concurrency or production load benchmark.
 | HYB-16 | PASS | Repeated results/citations/ranks; read-only transactions, no writes or connection during embedding |
 | HYB-17 | PASS | Twelve concurrent searches over two contexts using four workers, no context bleed |
 | HYB-18 | PASS | Full 129-test local suite, including originals and live E5 |
-| Hosted CI | NOT RUN | Branch is local; workflow updated to retain its future JUnit artifact |
+| Hosted CI | PASS | [Push run 42251367801](https://github.com/ManhT005/ai-teaching-assistant/actions/runs/42251367801): 126 passed, 3 skipped, 0 failed; deterministic embeddings |
 | Independent human qrels review | NOT PERFORMED | Automated implementation-author source review is explicitly recorded |
 
 ## Delivery scope
@@ -168,6 +175,6 @@ Evidence Gate, tickets, webhook workers and real Zalo remain outside this change
 The model and ingestion parser/lifecycle were not rewritten. PostgreSQL `simple`
 is not full Vietnamese NLP, and no accent-insensitive retrieval is claimed.
 
-Commits remain local on `feature/rag-retrieval`; no push, PR creation or merge was
-performed. A future PR must target `develop` and retain the quality limitations,
-pending hosted CI and qrels review status above.
+The branch has been pushed as `feature/rag-retrieval` for PR review into
+`develop`; merge remains subject to review. The PR should retain the quality
+limitations and pending independent qrels review status above.
