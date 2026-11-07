@@ -182,6 +182,9 @@ class Event(Base):
         String(20), nullable=False, default="PENDING", server_default="PENDING"
     )
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    processing_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_error_code: Mapped[str | None] = mapped_column(String(80))
     # Client timestamp is preserved separately from the trusted server intake time.
     source_received_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     received_at: Mapped[datetime] = mapped_column(
@@ -196,6 +199,8 @@ class Answer(Base):
     decision: Mapped[str] = mapped_column(String(30), nullable=False)
     reply_text: Mapped[str] = mapped_column(Text, nullable=False)
     source_chunks: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    validation_summary: Mapped[dict | None] = mapped_column(JSONB)
+    provider_request_id: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -205,6 +210,9 @@ class Ticket(Base):
     event_id: Mapped[int] = mapped_column(ForeignKey("events.id"), unique=True, nullable=False)
     class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"), nullable=False)
     reason: Mapped[str] = mapped_column(String(120), nullable=False)
+    reason_code: Mapped[str | None] = mapped_column(String(80))
+    assigned_to: Mapped[str | None] = mapped_column(String(160))
+    evidence_summary: Mapped[dict | None] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(
         String(25), nullable=False, default="OPEN", server_default="OPEN"
     )
@@ -218,7 +226,8 @@ class ModelUsage(Base):
     event_id: Mapped[int | None] = mapped_column(ForeignKey("events.id"))
     provider: Mapped[str] = mapped_column(String(50), nullable=False)
     model: Mapped[str] = mapped_column(String(120), nullable=False)
-    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer)
+    completion_tokens: Mapped[int | None] = mapped_column(Integer)
+    request_id: Mapped[str | None] = mapped_column(String(255))
     estimated_cost_usd: Mapped[float | None] = mapped_column(Numeric(12, 6))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
