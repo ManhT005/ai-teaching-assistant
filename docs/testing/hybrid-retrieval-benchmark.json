@@ -1,0 +1,3233 @@
+{
+  "evaluated_at": "2026-11-06T16:10:06.446695+00:00",
+  "mode": "DEMO ONLY; relevance ranks are not answer confidence",
+  "model": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "embedding_backend": "EmbeddingService",
+  "dataset_version": "1.0",
+  "review": {
+    "reviewer": "Codex (automated implementation-author source review)",
+    "method": "Read all 26 original supplied sections and freeze these labels before the first hybrid quality measurement.",
+    "human_review_status": "not_performed",
+    "frozen_on": "2026-11-06",
+    "selection": "Technical anchors, paraphrases, schedules, shared guidance, multi-section relevance and no-evidence cases. No tuning against these questions."
+  },
+  "configuration": {
+    "top_k": 3,
+    "dense_candidates": 10,
+    "lexical_candidates": 10,
+    "max_lexical_terms": 6,
+    "rrf_k": 60
+  },
+  "corpus": {
+    "DOC-GS-01": {
+      "checksum": "59fd19dd401a2ad65960f536016420106edd96f239b28d06833d31a94292590e",
+      "version": 1,
+      "chunks": 9
+    },
+    "DOC-AUTO-01": {
+      "checksum": "8a8078ad32825192b5f8f4b3478ca870394ce67a20409798b4e22ad1b1f42bcc",
+      "version": 1,
+      "chunks": 10
+    },
+    "DOC-FAQ-01": {
+      "checksum": "88b92d7c1c9b95946abcdd6e3dd21065d9962b7d0a392689a86e2b61da0928d7",
+      "version": 1,
+      "chunks": 8
+    }
+  },
+  "questions": 30,
+  "answerable_questions": 26,
+  "unscored_questions": 4,
+  "cross_class_hits": 0,
+  "summary": {
+    "dense": {
+      "hit_at_3": 1.0,
+      "recall_at_3": 0.9551282051282052,
+      "mrr_at_3": 1.0
+    },
+    "lexical": {
+      "hit_at_3": 0.7307692307692307,
+      "recall_at_3": 0.6987179487179488,
+      "mrr_at_3": 0.685897435897436
+    },
+    "hybrid": {
+      "hit_at_3": 1.0,
+      "recall_at_3": 0.935897435897436,
+      "mrr_at_3": 0.9807692307692307
+    }
+  },
+  "provisional_targets": {
+    "recall_at_3_at_least_90_percent": true,
+    "no_more_than_2_percentage_points_recall_regression": true
+  },
+  "warmup_ms": 11119.686000005458,
+  "latency_method": "One warmed serial measurement per question; not a concurrent load benchmark",
+  "latency_ms": {
+    "encode_ms": {
+      "p50": 17.61255000019446,
+      "p95": 26.62764499982586
+    },
+    "scope_ms": {
+      "p50": 7.076500001858221,
+      "p95": 8.441415003471775
+    },
+    "dense_sql_ms": {
+      "p50": 4.780699997354532,
+      "p95": 6.374259998119667
+    },
+    "lexical_sql_ms": {
+      "p50": 3.34379999912926,
+      "p95": 5.184710003595681
+    },
+    "fusion_ms": {
+      "p50": 0.12510000306065194,
+      "p95": 0.23145499872043726
+    },
+    "total_ms": {
+      "p50": 35.14769999674172,
+      "p95": 56.265585003711685
+    }
+  },
+  "cases": [
+    {
+      "id": "GS-01",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-02",
+        "GS-07",
+        "GS-CLASS-02"
+      ],
+      "query_sha256": "e56a3c0bfa74881e8d119758d54a6525225aae6e18c41fa5b1a444a1b30ccbea",
+      "lexical_terms": [
+        "sumifs"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-02",
+          "GS-07",
+          "GS-CLASS-02"
+        ],
+        "lexical": [
+          "GS-02",
+          "GS-07",
+          "GS-CLASS-02"
+        ],
+        "hybrid": [
+          "GS-02",
+          "GS-07",
+          "GS-CLASS-02"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 26.26600000075996,
+        "scope_ms": 11.430699996708427,
+        "dense_sql_ms": 15.137900001718663,
+        "lexical_sql_ms": 10.845800003153272,
+        "fusion_ms": 0.30300000071292743,
+        "total_ms": 66.20730000577169
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 3,
+          "chunk_id": "02f8ba1ba281d526a41181db45b92bc890bf093bf3ab6e7dc126af38b6d7f21f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-02",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13; block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.12142496577352335,
+          "lexical_rank": 1,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 8,
+          "chunk_id": "4b2cec6869f09c09125ec23052f868a60c1ecab481a8d3d70214eb6b99eed2a8",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-07",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 32; block 33; block 34; block 35; block 36; block 37",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.12278275218215562,
+          "lexical_rank": 2,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03225806451612903
+        },
+        {
+          "row_id": 24,
+          "chunk_id": "8415814a0d2f71e1e507725ed969bd547860f3e5cf385616019e10a89b0dd92a",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-CLASS-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 16; block 17 / table 1 / row 1; block 17 / table 1 / row 2; block 17 / table 1 / row 3; block 17 / table 1 / row 4; block 17 / table 1 / row 5",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.12969314279000943,
+          "lexical_rank": 3,
+          "lexical_score": 0.1,
+          "rrf_score": 0.031746031746031744
+        }
+      ]
+    },
+    {
+      "id": "GS-02",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-04",
+        "GS-CLASS-02"
+      ],
+      "query_sha256": "87366a21675a143c58929c4b57360ba2a7b3dcb969c5ce2e76b395737b293076",
+      "lexical_terms": [
+        "importrange"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-04",
+          "GS-CLASS-02",
+          "GS-05"
+        ],
+        "lexical": [
+          "GS-04",
+          "GS-CLASS-02"
+        ],
+        "hybrid": [
+          "GS-04",
+          "GS-CLASS-02",
+          "GS-05"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 26.187600000412203,
+        "scope_ms": 7.714599996688776,
+        "dense_sql_ms": 5.226900000707246,
+        "lexical_sql_ms": 3.380900001502596,
+        "fusion_ms": 0.12260000221431255,
+        "total_ms": 43.96660000202246
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 5,
+          "chunk_id": "a105edce45cf29eb00a05f1676f8a9c69d54757b19dc7302c9e7fbfdb1f0d341",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-04",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 22; block 23; block 24",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.10976665557821497,
+          "lexical_rank": 1,
+          "lexical_score": 0.4,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 24,
+          "chunk_id": "8415814a0d2f71e1e507725ed969bd547860f3e5cf385616019e10a89b0dd92a",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-CLASS-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 16; block 17 / table 1 / row 1; block 17 / table 1 / row 2; block 17 / table 1 / row 3; block 17 / table 1 / row 4; block 17 / table 1 / row 5",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.14085011834799388,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03225806451612903
+        },
+        {
+          "row_id": 6,
+          "chunk_id": "6017de826554e9684b5498e85d3249aa15fcc92984397f2244989c650885f798",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-05",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 25; block 26",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.1869917289028491,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "GS-03",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-02",
+        "GS-07"
+      ],
+      "query_sha256": "035f52b69b20c0826983ad692d2e210757e117661e4aab6e9cb7ba139dee50f4",
+      "lexical_terms": [
+        "countifs"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-02",
+          "GS-01",
+          "GS-07"
+        ],
+        "lexical": [
+          "GS-02",
+          "GS-07"
+        ],
+        "hybrid": [
+          "GS-02",
+          "GS-07",
+          "GS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.0362000024179,
+        "scope_ms": 7.5013000023318455,
+        "dense_sql_ms": 4.048899994813837,
+        "lexical_sql_ms": 2.9290000020409934,
+        "fusion_ms": 0.1875000016298145,
+        "total_ms": 32.2946000014781
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 3,
+          "chunk_id": "02f8ba1ba281d526a41181db45b92bc890bf093bf3ab6e7dc126af38b6d7f21f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-02",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13; block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.10677557547237859,
+          "lexical_rank": 1,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 8,
+          "chunk_id": "4b2cec6869f09c09125ec23052f868a60c1ecab481a8d3d70214eb6b99eed2a8",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-07",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 32; block 33; block 34; block 35; block 36; block 37",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.12994240165443405,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03200204813108039
+        },
+        {
+          "row_id": 2,
+          "chunk_id": "a6585f8e95144798d111ca274878953ff712f5294f68c2b98ad5ba80db549d95",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 6 / table 1 / row 6; block 8",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.12598269426925657,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        }
+      ]
+    },
+    {
+      "id": "GS-04",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-03"
+      ],
+      "query_sha256": "7bf93f070de0ae6b22ac48c40166b713a99e1026af0a12dcf455d6a17117d104",
+      "lexical_terms": [
+        "eomonth",
+        "today"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-03",
+          "GS-02",
+          "GS-07"
+        ],
+        "lexical": [
+          "GS-03"
+        ],
+        "hybrid": [
+          "GS-03",
+          "GS-02",
+          "GS-07"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 26.295499999832828,
+        "scope_ms": 6.949199996597599,
+        "dense_sql_ms": 4.599600004439708,
+        "lexical_sql_ms": 3.1780999997863546,
+        "fusion_ms": 0.127500003145542,
+        "total_ms": 42.308399999456014
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 4,
+          "chunk_id": "02f31f06422b1828d5f65d225c489d5624dfbd55f303d7bb0f09f0e8346d9a35",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-03",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 16; block 17; block 18; block 19; block 20; block 21",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.0953809505246872,
+          "lexical_rank": 1,
+          "lexical_score": 0.5,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 3,
+          "chunk_id": "02f8ba1ba281d526a41181db45b92bc890bf093bf3ab6e7dc126af38b6d7f21f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-02",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13; block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.15626436471939087,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 8,
+          "chunk_id": "4b2cec6869f09c09125ec23052f868a60c1ecab481a8d3d70214eb6b99eed2a8",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-07",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 32; block 33; block 34; block 35; block 36; block 37",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.16962330522398172,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "GS-05",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-05"
+      ],
+      "query_sha256": "4d763671fcc7923e1b6cc63af9df24f5f8b82354e7050ba9e515779c2062fdc7",
+      "lexical_terms": [
+        "crm"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-05",
+          "GS-06",
+          "COMMON-04"
+        ],
+        "lexical": [
+          "GS-05"
+        ],
+        "hybrid": [
+          "GS-05",
+          "GS-06",
+          "COMMON-04"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 17.927100001543295,
+        "scope_ms": 6.882000001496635,
+        "dense_sql_ms": 6.036999999196269,
+        "lexical_sql_ms": 3.9121000008890405,
+        "fusion_ms": 0.10929999552899972,
+        "total_ms": 36.24619999754941
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 6,
+          "chunk_id": "6017de826554e9684b5498e85d3249aa15fcc92984397f2244989c650885f798",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-05",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 25; block 26",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.0904549306359912,
+          "lexical_rank": 1,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 7,
+          "chunk_id": "4ac66a627750c1e96ace905b242fd61a5c7c6367a5a48126c926f13dce838d6f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-06",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 27; block 28; block 29; block 30; block 31",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.15843520659980093,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 27,
+          "chunk_id": "0bda22ba1efd454143dd047aa1b656534bc08b7834fead1d389540784f7c06fd",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-04",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 24; block 25",
+          "class_scope": "COMMON",
+          "dense_rank": 3,
+          "dense_distance": 0.1674896478652954,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "GS-06",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-06"
+      ],
+      "query_sha256": "1bf0c906f1080568bbeb9d4077a111307afa5722a4b77299688653b12be4a5bd",
+      "lexical_terms": [
+        "kpi"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-06",
+          "GS-01",
+          "GS-02"
+        ],
+        "lexical": [
+          "GS-CLASS-01",
+          "GS-06"
+        ],
+        "hybrid": [
+          "GS-06",
+          "GS-CLASS-01",
+          "GS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 0.5
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.170100003364496,
+        "scope_ms": 7.074100001773331,
+        "dense_sql_ms": 4.900100000668317,
+        "lexical_sql_ms": 4.219399997964501,
+        "fusion_ms": 0.1883000004454516,
+        "total_ms": 33.85050000360934
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 7,
+          "chunk_id": "4ac66a627750c1e96ace905b242fd61a5c7c6367a5a48126c926f13dce838d6f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-06",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 27; block 28; block 29; block 30; block 31",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.13286124076112604,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 23,
+          "chunk_id": "470fea9a4b36c4fd8e20563a1080ed952cf95f795f28decc72e0f5fd9cf8dca3",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 8,
+          "dense_distance": 0.18632042407989502,
+          "lexical_rank": 1,
+          "lexical_score": 0.3,
+          "rrf_score": 0.031099324975891997
+        },
+        {
+          "row_id": 2,
+          "chunk_id": "a6585f8e95144798d111ca274878953ff712f5294f68c2b98ad5ba80db549d95",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 6 / table 1 / row 6; block 8",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.17294371128082275,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        }
+      ]
+    },
+    {
+      "id": "GS-07",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-07"
+      ],
+      "query_sha256": "36459d17b6ce357aca7d3f65ae833d6f95f3e9e70b89da928d5d38857d9bcb17",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "GS-07",
+          "GS-01",
+          "GS-01"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "GS-07",
+          "GS-01",
+          "GS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 22.098399997048546,
+        "scope_ms": 7.283799997821916,
+        "dense_sql_ms": 5.717799998819828,
+        "lexical_sql_ms": 0.618199999735225,
+        "fusion_ms": 0.10970000585075468,
+        "total_ms": 37.2304000047734
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 8,
+          "chunk_id": "4b2cec6869f09c09125ec23052f868a60c1ecab481a8d3d70214eb6b99eed2a8",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-07",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 32; block 33; block 34; block 35; block 36; block 37",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.12220852110284319,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 1,
+          "chunk_id": "c14cfbd04e4cc107a04b32344dba90cd92ad91d8309f8e5d5632fe2d046118f0",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 5; block 6 / table 1 / row 1; block 6 / table 1 / row 2; block 6 / table 1 / row 3; block 6 / table 1 / row 4; block 6 / table 1 / row 5; block 6 / table 1 / row 6",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.1400141036502046,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 2,
+          "chunk_id": "a6585f8e95144798d111ca274878953ff712f5294f68c2b98ad5ba80db549d95",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 6 / table 1 / row 6; block 8",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.14513271181984322,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "GS-08",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-01",
+        "GS-06",
+        "GS-CLASS-02"
+      ],
+      "query_sha256": "6148361eee0653a1a2ab52f6426167936052c70acc9add64924482569ad033da",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "GS-01",
+          "GS-02",
+          "GS-06"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "GS-01",
+          "GS-02",
+          "GS-06"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.6666666666666666,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.6666666666666666,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 21.455499998410232,
+        "scope_ms": 7.386400000541471,
+        "dense_sql_ms": 5.609599997114856,
+        "lexical_sql_ms": 0.3592000066419132,
+        "fusion_ms": 0.11399999493733048,
+        "total_ms": 35.99069999472704
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 2,
+          "chunk_id": "a6585f8e95144798d111ca274878953ff712f5294f68c2b98ad5ba80db549d95",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 6 / table 1 / row 6; block 8",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.133117906265382,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 3,
+          "chunk_id": "02f8ba1ba281d526a41181db45b92bc890bf093bf3ab6e7dc126af38b6d7f21f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-02",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13; block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.1464213641630775,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 7,
+          "chunk_id": "4ac66a627750c1e96ace905b242fd61a5c7c6367a5a48126c926f13dce838d6f",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-06",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 27; block 28; block 29; block 30; block 31",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.14853707280091977,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "GS-09",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-CLASS-01",
+        "GS-CLASS-02"
+      ],
+      "query_sha256": "f5b5bcd212999cee5a35e250f46ceed65ac0513ce1b3092af62bce8c0be1b642",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "GS-CLASS-01",
+          "COMMON-02",
+          "GS-01"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "GS-CLASS-01",
+          "COMMON-02",
+          "GS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 17.18569999502506,
+        "scope_ms": 7.374500004516449,
+        "dense_sql_ms": 4.138399999646936,
+        "lexical_sql_ms": 0.337799996486865,
+        "fusion_ms": 0.10689999908208847,
+        "total_ms": 30.249499999627005
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 23,
+          "chunk_id": "470fea9a4b36c4fd8e20563a1080ed952cf95f795f28decc72e0f5fd9cf8dca3",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.10938042402267456,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 21,
+          "chunk_id": "8d22dc36db4228d7115d9081e06aa38e8e2a80c53509684b4021522f949c458b",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 9; block 10; block 11",
+          "class_scope": "COMMON",
+          "dense_rank": 2,
+          "dense_distance": 0.13581746007099837,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 1,
+          "chunk_id": "c14cfbd04e4cc107a04b32344dba90cd92ad91d8309f8e5d5632fe2d046118f0",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 5; block 6 / table 1 / row 1; block 6 / table 1 / row 2; block 6 / table 1 / row 3; block 6 / table 1 / row 4; block 6 / table 1 / row 5; block 6 / table 1 / row 6",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.13710421323776245,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "GS-10",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "GS-CLASS-01"
+      ],
+      "query_sha256": "7776c39cb7bde6559090ad45b9854642b2295fd20a71a62b0e48ddf0acfb118b",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "GS-CLASS-01",
+          "GS-01",
+          "GS-03"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "GS-CLASS-01",
+          "GS-01",
+          "GS-03"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 15.590599999995902,
+        "scope_ms": 7.094399996276479,
+        "dense_sql_ms": 4.926400004478637,
+        "lexical_sql_ms": 0.37319999682949856,
+        "fusion_ms": 0.09339999814983457,
+        "total_ms": 29.2394999996759
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 23,
+          "chunk_id": "470fea9a4b36c4fd8e20563a1080ed952cf95f795f28decc72e0f5fd9cf8dca3",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 14; block 15",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.11828386783599854,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 1,
+          "chunk_id": "c14cfbd04e4cc107a04b32344dba90cd92ad91d8309f8e5d5632fe2d046118f0",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 5; block 6 / table 1 / row 1; block 6 / table 1 / row 2; block 6 / table 1 / row 3; block 6 / table 1 / row 4; block 6 / table 1 / row 5; block 6 / table 1 / row 6",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.13833653926849365,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 4,
+          "chunk_id": "02f31f06422b1828d5f65d225c489d5624dfbd55f303d7bb0f09f0e8346d9a35",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-03",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 16; block 17; block 18; block 19; block 20; block 21",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.14116827950855126,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "AUTO-01",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-03",
+        "AUTO-09",
+        "AUTO-CLASS-02"
+      ],
+      "query_sha256": "d63da56834ca503179990c702f2b57f774fbf7f6414efe8f298725d3be429a68",
+      "lexical_terms": [
+        "n8n",
+        "401",
+        "unauthorized"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-09",
+          "AUTO-03",
+          "AUTO-10"
+        ],
+        "lexical": [
+          "AUTO-03",
+          "AUTO-CLASS-01",
+          "AUTO-09"
+        ],
+        "hybrid": [
+          "AUTO-03",
+          "AUTO-09",
+          "AUTO-CLASS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.6666666666666666,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.6666666666666666,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.6666666666666666,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 15.351499998359941,
+        "scope_ms": 6.546700002218131,
+        "dense_sql_ms": 4.5046000013826415,
+        "lexical_sql_ms": 4.0719000026001595,
+        "fusion_ms": 0.12350000179139897,
+        "total_ms": 31.894300002022646
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 12,
+          "chunk_id": "5b8ea6c71970a7336486a72a00a0996bff7f8f1687933a5ac7b2f23e135c4869",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-03",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.13522982597351074,
+          "lexical_rank": 1,
+          "lexical_score": 0.3,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 18,
+          "chunk_id": "00cf3f9bf325b58d63f4b49fde8b8cc2fdcd6c3925073cc0f1a073530784dde6",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-09",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 30; block 31",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.12400400638580322,
+          "lexical_rank": 3,
+          "lexical_score": 0.2,
+          "rrf_score": 0.032266458495966696
+        },
+        {
+          "row_id": 25,
+          "chunk_id": "51406b6d9097585628295786a669b5f54e0a0be3f6634b2c3e2c740054a409b9",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 5,
+          "dense_distance": 0.15026473999023438,
+          "lexical_rank": 2,
+          "lexical_score": 0.3,
+          "rrf_score": 0.0315136476426799
+        }
+      ]
+    },
+    {
+      "id": "AUTO-02",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-03"
+      ],
+      "query_sha256": "18c3380f753f8119e51164dbc46454ec6931e1aab22eab70384fa39f12491baa",
+      "lexical_terms": [
+        "api",
+        "403",
+        "forbidden",
+        "role",
+        "scope"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-03",
+          "AUTO-09",
+          "AUTO-CLASS-02"
+        ],
+        "lexical": [
+          "AUTO-03",
+          "AUTO-04",
+          "AUTO-07"
+        ],
+        "hybrid": [
+          "AUTO-03",
+          "AUTO-04",
+          "AUTO-09"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 15.907000000879634,
+        "scope_ms": 7.40810000570491,
+        "dense_sql_ms": 5.406599993875716,
+        "lexical_sql_ms": 5.425100003776606,
+        "fusion_ms": 0.2012999975704588,
+        "total_ms": 36.032199997862335
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 12,
+          "chunk_id": "5b8ea6c71970a7336486a72a00a0996bff7f8f1687933a5ac7b2f23e135c4869",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-03",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.09208040880677482,
+          "lexical_rank": 1,
+          "lexical_score": 0.7,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 13,
+          "chunk_id": "a6bf5405bca9d598a303dda031ae9ee23a1340fa8034769597b480af31fa8c74",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-04",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 14; block 15",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 4,
+          "dense_distance": 0.14590185011018064,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.031754032258064516
+        },
+        {
+          "row_id": 18,
+          "chunk_id": "00cf3f9bf325b58d63f4b49fde8b8cc2fdcd6c3925073cc0f1a073530784dde6",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-09",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 30; block 31",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.13947265508933782,
+          "lexical_rank": 4,
+          "lexical_score": 0.1,
+          "rrf_score": 0.031754032258064516
+        }
+      ]
+    },
+    {
+      "id": "AUTO-03",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-03"
+      ],
+      "query_sha256": "a3404a222858102cf45298e1e381af719c5102c9bb152a8ba64436d54e39e7bb",
+      "lexical_terms": [
+        "429",
+        "requests",
+        "backoff",
+        "retry"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-03",
+          "AUTO-CLASS-02",
+          "AUTO-09"
+        ],
+        "lexical": [
+          "AUTO-03",
+          "AUTO-07"
+        ],
+        "hybrid": [
+          "AUTO-03",
+          "AUTO-07",
+          "AUTO-CLASS-02"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 18.75579999614274,
+        "scope_ms": 6.674600001133513,
+        "dense_sql_ms": 5.742699999245815,
+        "lexical_sql_ms": 3.9171000025817193,
+        "fusion_ms": 0.18730000010691583,
+        "total_ms": 36.6747999942163
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 12,
+          "chunk_id": "5b8ea6c71970a7336486a72a00a0996bff7f8f1687933a5ac7b2f23e135c4869",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-03",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.11399977719784948,
+          "lexical_rank": 1,
+          "lexical_score": 0.5,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 16,
+          "chunk_id": "9e699de9fdd3007088d322acfaa8a6656a6624af233f1f396dcd079262480ec8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-07",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 21; block 22",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 6,
+          "dense_distance": 0.16959707918184375,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03128054740957967
+        },
+        {
+          "row_id": 26,
+          "chunk_id": "98a5a1f92ea215581f6e04293f9cb0efc6bc5ae8a6f1352fa93c58be155c66d4",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 21; block 22 / table 2 / row 1; block 22 / table 2 / row 2; block 22 / table 2 / row 3; block 22 / table 2 / row 4; block 22 / table 2 / row 5",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.15166066269151413,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        }
+      ]
+    },
+    {
+      "id": "AUTO-04",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-02"
+      ],
+      "query_sha256": "15cd31201897881b0cf558505d36b029138c12fbe7d5e4056e5d77ba5bc81cae",
+      "lexical_terms": [
+        "webhook",
+        "production"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-02",
+          "AUTO-01",
+          "AUTO-CLASS-02"
+        ],
+        "lexical": [
+          "AUTO-02",
+          "AUTO-01",
+          "AUTO-04"
+        ],
+        "hybrid": [
+          "AUTO-02",
+          "AUTO-01",
+          "AUTO-08"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 25.608999996620696,
+        "scope_ms": 6.809300000895746,
+        "dense_sql_ms": 4.10330000158865,
+        "lexical_sql_ms": 4.6098000020720065,
+        "fusion_ms": 0.1205000007757917,
+        "total_ms": 42.41159999946831
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 11,
+          "chunk_id": "cb70b0282006856b8e6d96ca23fb2eb333a55222d024344cd8b88f853e8f060b",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-02",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 7; block 8",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.09742253438099857,
+          "lexical_rank": 1,
+          "lexical_score": 0.4,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 10,
+          "chunk_id": "71609ae77d3c5aac4ee5a72afffa30a514f4563e92b5ee0a732b5164735584c8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-01",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 4; block 5; block 6",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.137722909450531,
+          "lexical_rank": 2,
+          "lexical_score": 0.3,
+          "rrf_score": 0.03225806451612903
+        },
+        {
+          "row_id": 17,
+          "chunk_id": "743fa916b057d351103083fea65d15a0bbed90fe762ec091fa8eec6ac49f4fb0",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-08",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 23; block 24; block 25; block 26; block 27; block 28; block 29",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 5,
+          "dense_distance": 0.16229586825991316,
+          "lexical_rank": 4,
+          "lexical_score": 0.1,
+          "rrf_score": 0.031009615384615385
+        }
+      ]
+    },
+    {
+      "id": "AUTO-05",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-02",
+        "AUTO-CLASS-02"
+      ],
+      "query_sha256": "f1f5dcd12baf40753b550d094bba43baa16490234290069ecfe579b68b0de14d",
+      "lexical_terms": [
+        "url",
+        "webhook",
+        "request"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-02",
+          "AUTO-CLASS-02",
+          "AUTO-08"
+        ],
+        "lexical": [
+          "AUTO-02",
+          "AUTO-01",
+          "AUTO-CLASS-02"
+        ],
+        "hybrid": [
+          "AUTO-02",
+          "AUTO-CLASS-02",
+          "AUTO-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.900300004635938,
+        "scope_ms": 7.022799996775575,
+        "dense_sql_ms": 4.811999999219552,
+        "lexical_sql_ms": 3.919100003258791,
+        "fusion_ms": 0.12670000432990491,
+        "total_ms": 34.243400004925206
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 11,
+          "chunk_id": "cb70b0282006856b8e6d96ca23fb2eb333a55222d024344cd8b88f853e8f060b",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-02",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 7; block 8",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.10015916227345534,
+          "lexical_rank": 1,
+          "lexical_score": 0.4,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 26,
+          "chunk_id": "98a5a1f92ea215581f6e04293f9cb0efc6bc5ae8a6f1352fa93c58be155c66d4",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 21; block 22 / table 2 / row 1; block 22 / table 2 / row 2; block 22 / table 2 / row 3; block 22 / table 2 / row 4; block 22 / table 2 / row 5",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.12576394523596934,
+          "lexical_rank": 3,
+          "lexical_score": 0.3,
+          "rrf_score": 0.03200204813108039
+        },
+        {
+          "row_id": 10,
+          "chunk_id": "71609ae77d3c5aac4ee5a72afffa30a514f4563e92b5ee0a732b5164735584c8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-01",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 4; block 5; block 6",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 4,
+          "dense_distance": 0.15387678146362305,
+          "lexical_rank": 2,
+          "lexical_score": 0.3,
+          "rrf_score": 0.031754032258064516
+        }
+      ]
+    },
+    {
+      "id": "AUTO-06",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-04"
+      ],
+      "query_sha256": "11da352a31ebce80c2810a1118eb41cc0c52266241d01afd6a9e05a6c830eb33",
+      "lexical_terms": [
+        "hardcode",
+        "api",
+        "key",
+        "json",
+        "workflow"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-04",
+          "AUTO-09",
+          "AUTO-03"
+        ],
+        "lexical": [
+          "AUTO-04",
+          "AUTO-09",
+          "AUTO-01"
+        ],
+        "hybrid": [
+          "AUTO-04",
+          "AUTO-09",
+          "AUTO-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 15.781000001879875,
+        "scope_ms": 8.464500002446584,
+        "dense_sql_ms": 4.540800000540912,
+        "lexical_sql_ms": 3.8907999987713993,
+        "fusion_ms": 0.1906000034068711,
+        "total_ms": 34.451700004865415
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 13,
+          "chunk_id": "a6bf5405bca9d598a303dda031ae9ee23a1340fa8034769597b480af31fa8c74",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-04",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 14; block 15",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.11472933800641516,
+          "lexical_rank": 1,
+          "lexical_score": 0.5,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 18,
+          "chunk_id": "00cf3f9bf325b58d63f4b49fde8b8cc2fdcd6c3925073cc0f1a073530784dde6",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-09",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 30; block 31",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.11764787926388354,
+          "lexical_rank": 2,
+          "lexical_score": 0.4,
+          "rrf_score": 0.03225806451612903
+        },
+        {
+          "row_id": 10,
+          "chunk_id": "71609ae77d3c5aac4ee5a72afffa30a514f4563e92b5ee0a732b5164735584c8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-01",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 4; block 5; block 6",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 5,
+          "dense_distance": 0.15478729279116876,
+          "lexical_rank": 3,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03125763125763126
+        }
+      ]
+    },
+    {
+      "id": "AUTO-07",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-05"
+      ],
+      "query_sha256": "c124645ea6ab47a8177df5d70c0f56116b8f2b1c264eae2187e77fbef899b694",
+      "lexical_terms": [
+        "rag",
+        "embedding",
+        "retrieval"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-05",
+          "AUTO-06",
+          "AUTO-08"
+        ],
+        "lexical": [
+          "AUTO-05",
+          "AUTO-01",
+          "AUTO-06"
+        ],
+        "hybrid": [
+          "AUTO-05",
+          "AUTO-06",
+          "AUTO-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 22.722800000337884,
+        "scope_ms": 6.892400000651833,
+        "dense_sql_ms": 5.5264000038732775,
+        "lexical_sql_ms": 2.713099995162338,
+        "fusion_ms": 0.1190999973914586,
+        "total_ms": 39.14509999594884
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 14,
+          "chunk_id": "6c24c08abe996e1fcf04432080592fa73c11d5483534713addc777e5ebae4aec",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-05",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 16; block 17; block 18",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.12374565374093172,
+          "lexical_rank": 1,
+          "lexical_score": 0.3,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 15,
+          "chunk_id": "0b28857d4876f785c360edb5fd42e9c5ef0a19689338da9ded300061755f4e58",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-06",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.16083458545311013,
+          "lexical_rank": 3,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03200204813108039
+        },
+        {
+          "row_id": 10,
+          "chunk_id": "71609ae77d3c5aac4ee5a72afffa30a514f4563e92b5ee0a732b5164735584c8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-01",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 4; block 5; block 6",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 7,
+          "dense_distance": 0.1964996813684603,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.031054405392392875
+        }
+      ]
+    },
+    {
+      "id": "AUTO-08",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-05"
+      ],
+      "query_sha256": "1d8c9a4ec5e0b7eeb1f9fcf95e772f482e87b6811a12683961d112362c06f0f6",
+      "lexical_terms": [
+        "agent"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-05",
+          "COMMON-01",
+          "COMMON-04"
+        ],
+        "lexical": [
+          "AUTO-05",
+          "AUTO-CLASS-01"
+        ],
+        "hybrid": [
+          "AUTO-05",
+          "COMMON-01",
+          "AUTO-CLASS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 15.810299999429844,
+        "scope_ms": 6.7515999980969355,
+        "dense_sql_ms": 4.74190000386443,
+        "lexical_sql_ms": 3.034499997738749,
+        "fusion_ms": 0.10329999349778518,
+        "total_ms": 31.686899994383566
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 14,
+          "chunk_id": "6c24c08abe996e1fcf04432080592fa73c11d5483534713addc777e5ebae4aec",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-05",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 16; block 17; block 18",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.12139725685119629,
+          "lexical_rank": 1,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 20,
+          "chunk_id": "12f22022ac35fd6fd94efeb78dd50ea0bc1c10811e1c9df9ecc7b0900d796602",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 4; block 5; block 6; block 7; block 8",
+          "class_scope": "COMMON",
+          "dense_rank": 2,
+          "dense_distance": 0.14631026111183842,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 25,
+          "chunk_id": "51406b6d9097585628295786a669b5f54e0a0be3f6634b2c3e2c740054a409b9",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": null,
+          "dense_distance": null,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.016129032258064516
+        }
+      ]
+    },
+    {
+      "id": "AUTO-09",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-07",
+        "AUTO-09"
+      ],
+      "query_sha256": "b745fdc825724fe65038e3525d97b207e4dee3f60f6eb3e4d3ee55179e44e531",
+      "lexical_terms": [
+        "event_id"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-07",
+          "AUTO-09",
+          "AUTO-08"
+        ],
+        "lexical": [
+          "AUTO-09",
+          "AUTO-07",
+          "AUTO-08"
+        ],
+        "hybrid": [
+          "AUTO-07",
+          "AUTO-09",
+          "AUTO-08"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 17.865900001197588,
+        "scope_ms": 7.293899994692765,
+        "dense_sql_ms": 4.509300000790972,
+        "lexical_sql_ms": 3.6495000022114255,
+        "fusion_ms": 0.1849999971454963,
+        "total_ms": 35.129799995047506
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 16,
+          "chunk_id": "9e699de9fdd3007088d322acfaa8a6656a6624af233f1f396dcd079262480ec8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-07",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 21; block 22",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.11800915002822876,
+          "lexical_rank": 2,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 18,
+          "chunk_id": "00cf3f9bf325b58d63f4b49fde8b8cc2fdcd6c3925073cc0f1a073530784dde6",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-09",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 30; block 31",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.14847326278686523,
+          "lexical_rank": 1,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 17,
+          "chunk_id": "743fa916b057d351103083fea65d15a0bbed90fe762ec091fa8eec6ac49f4fb0",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-08",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 23; block 24; block 25; block 26; block 27; block 28; block 29",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 3,
+          "dense_distance": 0.16031878231055696,
+          "lexical_rank": 3,
+          "lexical_score": 0.1,
+          "rrf_score": 0.031746031746031744
+        }
+      ]
+    },
+    {
+      "id": "AUTO-10",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-03",
+        "AUTO-07"
+      ],
+      "query_sha256": "f914033904aa819bc3b945a0104abd95f94c6d11e4594b56af4a894d3bb0ff6e",
+      "lexical_terms": [
+        "api",
+        "retry"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-07",
+          "AUTO-03",
+          "AUTO-09"
+        ],
+        "lexical": [
+          "AUTO-03",
+          "AUTO-07",
+          "AUTO-04"
+        ],
+        "hybrid": [
+          "AUTO-03",
+          "AUTO-07",
+          "AUTO-09"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.772900002251845,
+        "scope_ms": 6.850099998700898,
+        "dense_sql_ms": 4.912199998216238,
+        "lexical_sql_ms": 4.890900003374554,
+        "fusion_ms": 0.2351000002818182,
+        "total_ms": 35.16559999843594
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 12,
+          "chunk_id": "5b8ea6c71970a7336486a72a00a0996bff7f8f1687933a5ac7b2f23e135c4869",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-03",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 9; block 10; block 11; block 12; block 13",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.13879728317260742,
+          "lexical_rank": 1,
+          "lexical_score": 0.3,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 16,
+          "chunk_id": "9e699de9fdd3007088d322acfaa8a6656a6624af233f1f396dcd079262480ec8",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-07",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 21; block 22",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.135056734085083,
+          "lexical_rank": 2,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 18,
+          "chunk_id": "00cf3f9bf325b58d63f4b49fde8b8cc2fdcd6c3925073cc0f1a073530784dde6",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-09",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 30; block 31",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 3,
+          "dense_distance": 0.15187615156173706,
+          "lexical_rank": 4,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03149801587301587
+        }
+      ]
+    },
+    {
+      "id": "AUTO-11",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-06"
+      ],
+      "query_sha256": "39abcfbe2811f807cb17813793e6fc1472a54d267c47e0df7c487c5a06657a63",
+      "lexical_terms": [
+        "rag"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-06",
+          "AUTO-05",
+          "AUTO-CLASS-01"
+        ],
+        "lexical": [
+          "AUTO-05",
+          "AUTO-01",
+          "AUTO-06"
+        ],
+        "hybrid": [
+          "AUTO-05",
+          "AUTO-06",
+          "AUTO-CLASS-01"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 0.3333333333333333
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 0.5
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 26.89939999982016,
+        "scope_ms": 7.015499999397434,
+        "dense_sql_ms": 3.9630000028409995,
+        "lexical_sql_ms": 4.462199998670258,
+        "fusion_ms": 0.20470000163186342,
+        "total_ms": 44.11460000119405
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 14,
+          "chunk_id": "6c24c08abe996e1fcf04432080592fa73c11d5483534713addc777e5ebae4aec",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-05",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 16; block 17; block 18",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.1060659226139814,
+          "lexical_rank": 1,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03252247488101534
+        },
+        {
+          "row_id": 15,
+          "chunk_id": "0b28857d4876f785c360edb5fd42e9c5ef0a19689338da9ded300061755f4e58",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-06",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.10453873249657397,
+          "lexical_rank": 3,
+          "lexical_score": 0.1,
+          "rrf_score": 0.032266458495966696
+        },
+        {
+          "row_id": 25,
+          "chunk_id": "51406b6d9097585628295786a669b5f54e0a0be3f6634b2c3e2c740054a409b9",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 3,
+          "dense_distance": 0.1302282136542654,
+          "lexical_rank": 4,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03149801587301587
+        }
+      ]
+    },
+    {
+      "id": "AUTO-12",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "AUTO-CLASS-01",
+        "AUTO-CLASS-02"
+      ],
+      "query_sha256": "45d5e45f772d66c6eb0cbc0e7a128b4cc7cdb98d2ba2a36bc04e4829416d648d",
+      "lexical_terms": [
+        "n8n"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-CLASS-01",
+          "COMMON-01",
+          "AUTO-CLASS-02"
+        ],
+        "lexical": [
+          "AUTO-CLASS-01",
+          "AUTO-01",
+          "AUTO-06"
+        ],
+        "hybrid": [
+          "AUTO-CLASS-01",
+          "AUTO-10",
+          "AUTO-06"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 25.117299999692477,
+        "scope_ms": 7.844700005080085,
+        "dense_sql_ms": 4.691699999966659,
+        "lexical_sql_ms": 3.145299997413531,
+        "fusion_ms": 0.19729999621631578,
+        "total_ms": 42.376399993372615
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 25,
+          "chunk_id": "51406b6d9097585628295786a669b5f54e0a0be3f6634b2c3e2c740054a409b9",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.09031051397323608,
+          "lexical_rank": 1,
+          "lexical_score": 0.3,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 19,
+          "chunk_id": "a6bbc64580471ad288136b7b2bea183ddddbb6f9cee5657c4f412080cfb5f1a4",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-10",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 32; block 33",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 5,
+          "dense_distance": 0.16405325150172256,
+          "lexical_rank": 5,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03076923076923077
+        },
+        {
+          "row_id": 15,
+          "chunk_id": "0b28857d4876f785c360edb5fd42e9c5ef0a19689338da9ded300061755f4e58",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-06",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 10,
+          "dense_distance": 0.17983341217041016,
+          "lexical_rank": 3,
+          "lexical_score": 0.1,
+          "rrf_score": 0.030158730158730156
+        }
+      ]
+    },
+    {
+      "id": "COMMON-01",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "COMMON-02"
+      ],
+      "query_sha256": "c9d25ec32f2b0a838e9f4ba17de15bb04588f23d90dcf2a938808a218b225c5d",
+      "lexical_terms": [
+        "token"
+      ],
+      "rankings": {
+        "dense": [
+          "COMMON-02",
+          "COMMON-01",
+          "GS-04"
+        ],
+        "lexical": [
+          "COMMON-02"
+        ],
+        "hybrid": [
+          "COMMON-02",
+          "COMMON-01",
+          "GS-04"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 18.29610000277171,
+        "scope_ms": 6.618699997488875,
+        "dense_sql_ms": 4.082400002516806,
+        "lexical_sql_ms": 3.306699996755924,
+        "fusion_ms": 0.1931000006152317,
+        "total_ms": 34.05399999610381
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 21,
+          "chunk_id": "8d22dc36db4228d7115d9081e06aa38e8e2a80c53509684b4021522f949c458b",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 9; block 10; block 11",
+          "class_scope": "COMMON",
+          "dense_rank": 1,
+          "dense_distance": 0.1288992685735646,
+          "lexical_rank": 1,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 20,
+          "chunk_id": "12f22022ac35fd6fd94efeb78dd50ea0bc1c10811e1c9df9ecc7b0900d796602",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 4; block 5; block 6; block 7; block 8",
+          "class_scope": "COMMON",
+          "dense_rank": 2,
+          "dense_distance": 0.17147879770524366,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 5,
+          "chunk_id": "a105edce45cf29eb00a05f1676f8a9c69d54757b19dc7302c9e7fbfdb1f0d341",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-04",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 22; block 23; block 24",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.17401659488677979,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "COMMON-02",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "COMMON-01"
+      ],
+      "query_sha256": "cbb12648fce58b044bd32759e1cc75354b8ab7978e69bf4089bb2970639dd193",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "COMMON-01",
+          "COMMON-04",
+          "AUTO-10"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "COMMON-01",
+          "COMMON-04",
+          "AUTO-10"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 15.898199999355711,
+        "scope_ms": 6.656100005784538,
+        "dense_sql_ms": 4.618099999788683,
+        "lexical_sql_ms": 0.6654999961028807,
+        "fusion_ms": 0.09299999510403723,
+        "total_ms": 29.278999994858168
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 20,
+          "chunk_id": "12f22022ac35fd6fd94efeb78dd50ea0bc1c10811e1c9df9ecc7b0900d796602",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 4; block 5; block 6; block 7; block 8",
+          "class_scope": "COMMON",
+          "dense_rank": 1,
+          "dense_distance": 0.08259528383044534,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 27,
+          "chunk_id": "0bda22ba1efd454143dd047aa1b656534bc08b7834fead1d389540784f7c06fd",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-04",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 24; block 25",
+          "class_scope": "COMMON",
+          "dense_rank": 2,
+          "dense_distance": 0.11272335052490234,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 19,
+          "chunk_id": "a6bbc64580471ad288136b7b2bea183ddddbb6f9cee5657c4f412080cfb5f1a4",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-10",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 32; block 33",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 3,
+          "dense_distance": 0.13405721580641017,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "COMMON-03",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "COMMON-02"
+      ],
+      "query_sha256": "64ff8d16f46e38b3dfeea614c7f2d2cdf75c5620fa99e89c79b9e59248a2b109",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "COMMON-02",
+          "AUTO-08",
+          "AUTO-10"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "COMMON-02",
+          "AUTO-08",
+          "AUTO-10"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.27780000126222,
+        "scope_ms": 7.195700003649108,
+        "dense_sql_ms": 4.749399995489512,
+        "lexical_sql_ms": 0.3674000035971403,
+        "fusion_ms": 0.1114999977289699,
+        "total_ms": 29.854300002625678
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 21,
+          "chunk_id": "8d22dc36db4228d7115d9081e06aa38e8e2a80c53509684b4021522f949c458b",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 9; block 10; block 11",
+          "class_scope": "COMMON",
+          "dense_rank": 1,
+          "dense_distance": 0.09410213302348458,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 17,
+          "chunk_id": "743fa916b057d351103083fea65d15a0bbed90fe762ec091fa8eec6ac49f4fb0",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-08",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 23; block 24; block 25; block 26; block 27; block 28; block 29",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.15067617289111934,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 19,
+          "chunk_id": "a6bbc64580471ad288136b7b2bea183ddddbb6f9cee5657c4f412080cfb5f1a4",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-10",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 32; block 33",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 3,
+          "dense_distance": 0.15947435385294506,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "COMMON-04",
+      "authorized_class": "GS-KPI-01",
+      "label": "answerable",
+      "relevant_sections": [
+        "COMMON-04"
+      ],
+      "query_sha256": "f94a9697a6efd725c0ad428a8248761fb0b12f1fcc3e252796ae2671fcda6895",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "COMMON-04",
+          "COMMON-01",
+          "COMMON-02"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "COMMON-04",
+          "COMMON-01",
+          "COMMON-02"
+        ]
+      },
+      "metrics": {
+        "dense": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        },
+        "lexical": {
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "mrr_at_3": 0.0
+        },
+        "hybrid": {
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "mrr_at_3": 1.0
+        }
+      },
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.11100000445731,
+        "scope_ms": 7.078900001943111,
+        "dense_sql_ms": 5.164399997738656,
+        "lexical_sql_ms": 0.34610000147949904,
+        "fusion_ms": 0.10869999823626131,
+        "total_ms": 30.055499999434687
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 27,
+          "chunk_id": "0bda22ba1efd454143dd047aa1b656534bc08b7834fead1d389540784f7c06fd",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-04",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 24; block 25",
+          "class_scope": "COMMON",
+          "dense_rank": 1,
+          "dense_distance": 0.14006513357162476,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 20,
+          "chunk_id": "12f22022ac35fd6fd94efeb78dd50ea0bc1c10811e1c9df9ecc7b0900d796602",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 4; block 5; block 6; block 7; block 8",
+          "class_scope": "COMMON",
+          "dense_rank": 2,
+          "dense_distance": 0.1421564732696713,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 21,
+          "chunk_id": "8d22dc36db4228d7115d9081e06aa38e8e2a80c53509684b4021522f949c458b",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 9; block 10; block 11",
+          "class_scope": "COMMON",
+          "dense_rank": 3,
+          "dense_distance": 0.16549377647079222,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "NEG-01",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "no_evidence",
+      "relevant_sections": [],
+      "query_sha256": "b0dac9d65b56db3084b1ad8ce8c606656a5fa09cf42c2c6c0ea14271d2cabb9f",
+      "lexical_terms": [
+        "sumifs",
+        "countifs"
+      ],
+      "rankings": {
+        "dense": [
+          "COMMON-04",
+          "COMMON-01",
+          "AUTO-06"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "COMMON-04",
+          "COMMON-01",
+          "AUTO-06"
+        ]
+      },
+      "metrics": null,
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 16.56139999977313,
+        "scope_ms": 8.413200004724786,
+        "dense_sql_ms": 6.650199997238815,
+        "lexical_sql_ms": 3.877000002830755,
+        "fusion_ms": 0.1157000006060116,
+        "total_ms": 37.03650000534253
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 27,
+          "chunk_id": "0bda22ba1efd454143dd047aa1b656534bc08b7834fead1d389540784f7c06fd",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-04",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 24; block 25",
+          "class_scope": "COMMON",
+          "dense_rank": 1,
+          "dense_distance": 0.18052535173145678,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 20,
+          "chunk_id": "12f22022ac35fd6fd94efeb78dd50ea0bc1c10811e1c9df9ecc7b0900d796602",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 4; block 5; block 6; block 7; block 8",
+          "class_scope": "COMMON",
+          "dense_rank": 2,
+          "dense_distance": 0.1914645801228786,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 15,
+          "chunk_id": "0b28857d4876f785c360edb5fd42e9c5ef0a19689338da9ded300061755f4e58",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-06",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 3,
+          "dense_distance": 0.19355623760484086,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "NEG-02",
+      "authorized_class": "GS-KPI-01",
+      "label": "no_evidence",
+      "relevant_sections": [],
+      "query_sha256": "d832409d0c5bcc88b9dce2321aad452148b2d292cad73bb6a53548bd25e64de4",
+      "lexical_terms": [
+        "webhook",
+        "production",
+        "n8n",
+        "401",
+        "unauthorized"
+      ],
+      "rankings": {
+        "dense": [
+          "GS-08",
+          "GS-01",
+          "GS-CLASS-02"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "GS-08",
+          "GS-01",
+          "GS-CLASS-02"
+        ]
+      },
+      "metrics": null,
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 17.987200000789016,
+        "scope_ms": 6.913400000485126,
+        "dense_sql_ms": 3.53729999915231,
+        "lexical_sql_ms": 3.284200000052806,
+        "fusion_ms": 0.10169999586651102,
+        "total_ms": 33.33089999796357
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 9,
+          "chunk_id": "4c10479253d53f155e0f54ea1090126ac47949a2f40118984d2074198a488cb4",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-08",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 38; block 39",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 1,
+          "dense_distance": 0.16654895743435727,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 1,
+          "chunk_id": "c14cfbd04e4cc107a04b32344dba90cd92ad91d8309f8e5d5632fe2d046118f0",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 5; block 6 / table 1 / row 1; block 6 / table 1 / row 2; block 6 / table 1 / row 3; block 6 / table 1 / row 4; block 6 / table 1 / row 5; block 6 / table 1 / row 6",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.17798988950312655,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 24,
+          "chunk_id": "8415814a0d2f71e1e507725ed969bd547860f3e5cf385616019e10a89b0dd92a",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-CLASS-02",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 16; block 17 / table 1 / row 1; block 17 / table 1 / row 2; block 17 / table 1 / row 3; block 17 / table 1 / row 4; block 17 / table 1 / row 5",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.17937975052715693,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "NEG-03",
+      "authorized_class": "GS-KPI-01",
+      "label": "no_evidence",
+      "relevant_sections": [],
+      "query_sha256": "648de80d6dd262633f5245be74530bd5499a62aad440dec1823ece1d1c9af665",
+      "lexical_terms": [],
+      "rankings": {
+        "dense": [
+          "COMMON-03",
+          "GS-08",
+          "GS-01"
+        ],
+        "lexical": [],
+        "hybrid": [
+          "COMMON-03",
+          "GS-08",
+          "GS-01"
+        ]
+      },
+      "metrics": null,
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 17.359199999191333,
+        "scope_ms": 6.755300004442688,
+        "dense_sql_ms": 4.480199997487944,
+        "lexical_sql_ms": 0.7665000011911616,
+        "fusion_ms": 0.22699999681208283,
+        "total_ms": 32.320400001481175
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 22,
+          "chunk_id": "5a1e2245fa3ede0d4743043663dc01cc48b98cd6fc1ebc18e8942b72c33fbf68",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "COMMON-03",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 12; block 13",
+          "class_scope": "COMMON",
+          "dense_rank": 1,
+          "dense_distance": 0.170737624168396,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.01639344262295082
+        },
+        {
+          "row_id": 9,
+          "chunk_id": "4c10479253d53f155e0f54ea1090126ac47949a2f40118984d2074198a488cb4",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-08",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 38; block 39",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 2,
+          "dense_distance": 0.1732654571533203,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.016129032258064516
+        },
+        {
+          "row_id": 2,
+          "chunk_id": "a6585f8e95144798d111ca274878953ff712f5294f68c2b98ad5ba80db549d95",
+          "document_id": 3,
+          "doc_id": "DOC-GS-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "GS-01",
+          "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+          "locator": "block 4; block 6 / table 1 / row 6; block 8",
+          "class_scope": "GS-KPI-01",
+          "dense_rank": 3,
+          "dense_distance": 0.18054616451263428,
+          "lexical_rank": null,
+          "lexical_score": null,
+          "rrf_score": 0.015873015873015872
+        }
+      ]
+    },
+    {
+      "id": "NEG-04",
+      "authorized_class": "AUTO-N8N-01",
+      "label": "no_evidence",
+      "relevant_sections": [],
+      "query_sha256": "47c9e648f5692fb07cfda8e105d99748deb5186df9f341d4998611adfcd11603",
+      "lexical_terms": [
+        "rag"
+      ],
+      "rankings": {
+        "dense": [
+          "AUTO-05",
+          "AUTO-06",
+          "COMMON-01"
+        ],
+        "lexical": [
+          "AUTO-05",
+          "AUTO-01",
+          "AUTO-06"
+        ],
+        "hybrid": [
+          "AUTO-05",
+          "AUTO-06",
+          "AUTO-CLASS-01"
+        ]
+      },
+      "metrics": null,
+      "cross_class_hits": 0,
+      "timings_ms": {
+        "encode_ms": 48.03450000326848,
+        "scope_ms": 8.251599996583536,
+        "dense_sql_ms": 5.93710000248393,
+        "lexical_sql_ms": 3.511999995680526,
+        "fusion_ms": 0.18889999773819,
+        "total_ms": 67.6104000012856
+      },
+      "hybrid_citations": [
+        {
+          "row_id": 14,
+          "chunk_id": "6c24c08abe996e1fcf04432080592fa73c11d5483534713addc777e5ebae4aec",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-05",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 16; block 17; block 18",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 1,
+          "dense_distance": 0.14723818616639306,
+          "lexical_rank": 1,
+          "lexical_score": 0.2,
+          "rrf_score": 0.03278688524590164
+        },
+        {
+          "row_id": 15,
+          "chunk_id": "0b28857d4876f785c360edb5fd42e9c5ef0a19689338da9ded300061755f4e58",
+          "document_id": 4,
+          "doc_id": "DOC-AUTO-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-06",
+          "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 2,
+          "dense_distance": 0.16305177431989915,
+          "lexical_rank": 3,
+          "lexical_score": 0.1,
+          "rrf_score": 0.03200204813108039
+        },
+        {
+          "row_id": 25,
+          "chunk_id": "51406b6d9097585628295786a669b5f54e0a0be3f6634b2c3e2c740054a409b9",
+          "document_id": 5,
+          "doc_id": "DOC-FAQ-01",
+          "version": 1,
+          "external_version": "TEST-1.0",
+          "section_id": "AUTO-CLASS-01",
+          "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+          "locator": "block 19; block 20",
+          "class_scope": "AUTO-N8N-01",
+          "dense_rank": 6,
+          "dense_distance": 0.18663792689812475,
+          "lexical_rank": 4,
+          "lexical_score": 0.1,
+          "rrf_score": 0.030776515151515152
+        }
+      ]
+    }
+  ],
+  "qrels_sha256": "8d3c6719cc51fb2c189469c899f72960fb1ff2daa509c12a7fbd6fae447fc253"
+}

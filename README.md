@@ -2,16 +2,16 @@
 
 Lean MVP for a teaching assistant using **FastAPI + PostgreSQL/pgvector + a simulated Zalo webhook**.
 
-> **Status:** Demo ingestion is implemented: trusted DOCX/PDF/XLSX sources, tokenizer-based chunks, pinned E5 CPU embeddings, PostgreSQL staging, atomic version activation, revoke and exact vector smoke search. Health API, seed and authenticated event intake remain available. Student retrieval API, LLM answers, persisted teacher handoff, retries and real Zalo integration remain future work.
+> **Status:** Demo ingestion and hybrid retrieval are implemented: trusted sources, pinned E5 CPU embeddings, version activation/revoke, scoped exact cosine + PostgreSQL FTS + reciprocal rank fusion, operator CLI and a frozen retrieval benchmark. Health API, seed and authenticated event intake remain available. Student retrieval API, LLM answers, persisted teacher handoff, retries and real Zalo integration remain future work.
 
 ## Architecture
 
 ```text
 Mock Zalo Webhook --> FastAPI (auth / class mapping / dedup) --> PostgreSQL
                                                               |
-Reviewed PDF/DOCX/FAQ --> Ingestion --> pgvector <--- Future retrieval/generation
+Reviewed PDF/DOCX/FAQ --> Ingestion --> pgvector + FTS --> Hybrid retrieval
                                                               |
-                                                 Answer / Teacher Ticket (Day 3)
+                                                 Future Evidence Gate / Answer / Ticket
 ```
 
 One FastAPI process, one PostgreSQL service, no Redis, Celery or microservices.
@@ -135,6 +135,48 @@ model weights. Original-source and live-model checks are explicitly opt-in.
 See the [ingestion contract](docs/architecture/ingestion_contract.md) and
 [recorded acceptance results](docs/testing/rag-ingestion-acceptance.md).
 
+## Hybrid retrieval
+
+Apply `alembic upgrade head` to add migration `0005_hybrid_retrieval`. PostgreSQL
+automatically creates lexical vectors for existing chunks; re-ingestion is not
+required. The model, original data and ingestion lifecycle are unchanged.
+
+Use an existing **operator-selected mock group binding**, resolved in PostgreSQL:
+
+```powershell
+python -m scripts.hybrid_search --group mock-ai-automation --query "Em chạy n8n bị lỗi 401 Unauthorized"
+python -m scripts.hybrid_search --group mock-google-sheets --query "IMPORTRANGE có đồng bộ ghi chú và bình luận không?" --top-k 3
+
+# Compare all three rankings on the frozen original-source corpus.
+python -m scripts.evaluate_retrieval --check-target --output .pytest_cache/hybrid-evaluation.json
+```
+
+The CLI requires database access and is for operators only. Group names and the
+mock webhook shared secret do not establish a student's group membership. There
+is no public search endpoint or client-controlled class selector. Application
+code calls `resolve_authorized_scope` only after authenticating the upstream
+channel, then passes that scope to `HybridRetrievalService.search`.
+
+The service normalizes/bounds questions, encodes with the ingestion E5 revision,
+and applies one shared class/review/version/model SQL allowlist **before each
+branch's candidate limit**. Both queries share a read-only snapshot. RRF merges
+unique chunk rows, retaining citations and branch ranks. Ordinary logs and CLI
+output exclude source passages; `--include-content` explicitly prints them for
+operator inspection. Retrieval scores do not authorize an answer.
+
+Default budgets are 10 candidates per branch, up to 6 technical lexical anchors,
+`k_rrf=60`, final top-k 1–5 and questions up to 1000 characters within E5's token
+limit. See `.env.example`. PostgreSQL `simple` is not a Vietnamese word segmenter
+and does not remove accents. Questions without technical anchors use dense
+results when the lexical branch is empty.
+
+Local source-checked benchmark: **30 questions**, 26 answerable plus 4 explicitly
+unscored no-evidence cases. Hybrid Recall@3 is **93.59%**, versus dense **95.51%**;
+both have Hit@3 **100%** and zero cross-class hits. This is a small developer
+benchmark with automated source review; independent human label review has not
+been performed. See the [architecture](docs/architecture/hybrid_retrieval.md)
+and [acceptance report with misses](docs/testing/hybrid-retrieval-acceptance.md).
+
 ## Project map
 
 - `app/main.py` — API entrypoint
@@ -144,7 +186,9 @@ See the [ingestion contract](docs/architecture/ingestion_contract.md) and
 - `app/ingestion.py`, `app/source_manifest.py` — parsers, trusted source metadata and canonical deduplication
 - `app/chunking.py`, `app/embeddings.py` — token-aware section chunks and pinned E5 CPU vectors
 - `app/knowledge_store.py` — staging, idempotency, atomic activation and revocation
+- `app/retrieval.py`, `app/lexical_search.py`, `app/rank_fusion.py` — shared scope, dense/FTS candidates and deterministic RRF
 - `scripts/ingest_knowledge.py`, `scripts/smoke_vector_search.py` — operator CLI and scoped SQL diagnostic
+- `scripts/hybrid_search.py`, `scripts/evaluate_retrieval.py` — operator hybrid CLI and frozen quality comparison
 - `app/rag.py`, `app/handoff.py` — evidence contract and response text; processing remains Day 2–3 work
 - `alembic/` — versioned database migration, including pgvector extension
 - `scripts/seed.py` — seed two demo classes and mock group bindings
