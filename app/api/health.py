@@ -1,6 +1,7 @@
 """Liveness is independent of DB; readiness checks DB and pgvector."""
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
+
 from app.db import get_engine
 
 router = APIRouter(tags=["system"])

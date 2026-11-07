@@ -4,8 +4,12 @@ import argparse
 import json
 
 from app.db import get_session_factory
-from app.embeddings import EmbeddingService
-from app.retrieval import HybridRetrievalService, ScopeAuthorizationError, resolve_authorized_scope
+from app.knowledge.embeddings import EmbeddingService
+from app.retrieval.service import (
+    HybridRetrievalService,
+    ScopeAuthorizationError,
+    resolve_authorized_scope,
+)
 
 
 def main() -> None:

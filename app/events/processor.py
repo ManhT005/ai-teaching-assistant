@@ -5,14 +5,14 @@ from datetime import UTC, datetime
 
 from sqlalchemy import select, update
 
+from app.events.messages import insufficient_evidence_message
 from app.events.tickets import create_ticket, record_usage
 from app.generation.contracts import Citation, EventProcessingResult, ReasonCode, Usage
 from app.generation.evidence import sources_current
-from app.handoff import insufficient_evidence_message
 from app.llm.provider import ProviderFailure
 from app.mock_channel import question_from_text
 from app.models import Answer, Event, ModelUsage, Ticket
-from app.retrieval import (
+from app.retrieval.service import (
     ScopeAuthorizationError,
     normalize_question,
     resolve_authorized_scope,

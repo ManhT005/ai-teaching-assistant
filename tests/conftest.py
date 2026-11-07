@@ -12,7 +12,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.schema import CreateSchema, DropSchema
 
 from app.models import ChannelBinding, Classroom
-from app.retrieval import resolve_authorized_scope
+from app.retrieval.service import resolve_authorized_scope
 
 
 def migrate(engine, revision="head", *, downgrade=False):

@@ -6,7 +6,7 @@ import math
 from functools import cached_property
 
 from app.config import Settings, get_settings
-from app.embedding_contract import (
+from app.knowledge.embedding_contract import (
     DIMENSION,
     MAX_INPUT_TOKENS,
     MODEL_ID,
@@ -55,7 +55,7 @@ class EmbeddingService:
             )
         except Exception:
             raise RuntimeError(
-                "E5 tokenizer unavailable; run python -m app.embeddings --download"
+                "E5 tokenizer unavailable; run python -m app.knowledge.embeddings --download"
             ) from None
 
     @cached_property
@@ -73,7 +73,7 @@ class EmbeddingService:
             )
         except Exception:
             raise RuntimeError(
-                "E5 weights unavailable; run python -m app.embeddings --download"
+                "E5 weights unavailable; run python -m app.knowledge.embeddings --download"
             ) from None
 
         dimension = (

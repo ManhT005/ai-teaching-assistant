@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+
 from app.schemas import MockMessageEvent
 
 VALID = dict(event_id="e1", group_id="g1", sender_id="s1", text="/hoi test", received_at="2026-11-09T19:30:00+07:00")

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from app.source_manifest import load_manifest
+from app.knowledge.source_manifest import load_manifest
 from scripts.inspect_sources import inventory
 
 

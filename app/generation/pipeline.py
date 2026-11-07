@@ -6,7 +6,7 @@ from app.generation.contracts import AnswerDraft, ReasonCode, Usage
 from app.generation.evidence import EvidenceDecision, EvidenceGate
 from app.generation.validator import validate_answer
 from app.llm.provider import LLMProvider
-from app.retrieval import normalize_question
+from app.retrieval.service import normalize_question
 
 
 @dataclass(frozen=True)

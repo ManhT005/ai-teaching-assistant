@@ -6,10 +6,10 @@ from app.generation.contracts import AnswerDraft, Claim, ReasonCode
 from app.generation.evidence import EvidenceDecision, EvidenceGate
 from app.generation.pipeline import AnswerPipeline
 from app.generation.validator import validate_answer
-from app.knowledge_store import KnowledgeStore
+from app.knowledge.store import KnowledgeStore
 from app.llm.provider import FakeLLM
 from app.models import DocumentChunk
-from app.retrieval import HybridRetrievalService
+from app.retrieval.service import HybridRetrievalService
 
 TEXT = "n8n HTTP 401 Unauthorized: kiểm tra thông tin xác thực và header Authorization. Không đăng token lên nhóm."
 

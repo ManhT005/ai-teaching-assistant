@@ -4,6 +4,7 @@ This endpoint persists one accepted event before acknowledgement. It does NOT
 call an LLM, create a reply, or claim exactly-once external delivery.
 """
 import secrets
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -11,8 +12,8 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_db
-from app.models import ChannelBinding, Event
 from app.mock_channel import question_from_text
+from app.models import ChannelBinding, Event
 from app.schemas import MockMessageEvent, WebhookAck
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])

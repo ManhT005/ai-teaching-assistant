@@ -7,13 +7,13 @@ from sqlalchemy import select
 
 from app.config import get_settings
 from app.db import get_session_factory
-from app.embeddings import EmbeddingService
 from app.events.processor import EventProcessor
 from app.generation.evidence import EvidenceGate
 from app.generation.pipeline import AnswerPipeline
+from app.knowledge.embeddings import EmbeddingService
 from app.llm.provider import build_provider
 from app.models import Event
-from app.retrieval import HybridRetrievalService
+from app.retrieval.service import HybridRetrievalService
 
 
 def main(argv=None, *, sessions=None, processor=None):

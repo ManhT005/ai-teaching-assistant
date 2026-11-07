@@ -21,7 +21,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from app.embedding_contract import DIMENSION, MODEL_KEY
+from app.knowledge.embedding_contract import DIMENSION, MODEL_KEY
 
 
 class Base(DeclarativeBase):

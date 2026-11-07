@@ -3,8 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from app.ingestion import SourceMetadata, deduplicate_sources, eligible_demo_chunks, parse_document, parse_faq_xlsx
-from app.rag import evaluate_demo_evidence
+from app.generation.demo import evaluate_demo_evidence
+from app.knowledge.ingestion import (
+    SourceMetadata,
+    deduplicate_sources,
+    eligible_demo_chunks,
+    parse_document,
+    parse_faq_xlsx,
+)
 from scripts.check_sample_materials import load_sample_chunks
 
 SAMPLES = Path(__file__).resolve().parents[1] / "data/samples"

@@ -1,6 +1,7 @@
 """Demo evidence contract. Retrieval SQL, semantic assessment and LLM calls are future work."""
 from dataclasses import dataclass
-from app.ingestion import KnowledgeChunk, eligible_demo_chunks
+
+from app.knowledge.ingestion import KnowledgeChunk, eligible_demo_chunks
 
 
 @dataclass(frozen=True)

@@ -1,8 +1,9 @@
 """Idempotent seed for the two demo classes and local mock bindings."""
 from sqlalchemy import select
+
 from app.db import get_session_factory
-from app.models import Classroom, ChannelBinding
 from app.mock_channel import DEMO_CLASSES
+from app.models import ChannelBinding, Classroom
 
 
 def seed() -> None:

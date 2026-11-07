@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.ingestion import (
+from app.knowledge.ingestion import (
     KnowledgeChunk,
     SourceMetadata,
     deduplicate_sources,

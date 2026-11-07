@@ -5,9 +5,13 @@ import pytest
 from sqlalchemy import event, select, update
 from test_ingestion_db import FakeEmbedding, section
 
-from app.knowledge_store import KnowledgeStore
+from app.knowledge.store import KnowledgeStore
 from app.models import ChannelBinding, Document, DocumentChunk
-from app.retrieval import HybridRetrievalService, ScopeAuthorizationError, normalize_question
+from app.retrieval.service import (
+    HybridRetrievalService,
+    ScopeAuthorizationError,
+    normalize_question,
+)
 
 
 class QueryEmbedding(FakeEmbedding):
@@ -238,7 +242,7 @@ def test_sql_looking_question_cannot_change_database_or_widen_scope(hybrid):
 
 
 def test_one_snapshot_prevents_metadata_drift_during_revoke(hybrid, monkeypatch):
-    import app.retrieval as retrieval
+    import app.retrieval.service as retrieval
 
     service, store, contexts = hybrid
     context = contexts["AUTO-N8N-01"]

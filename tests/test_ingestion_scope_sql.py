@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from test_ingestion_db import FakeEmbedding, section
 
 from app.config import Settings
-from app.knowledge_store import KnowledgeStore
+from app.knowledge.store import KnowledgeStore
 from app.models import Document, DocumentChunk
 from scripts.smoke_vector_search import search
 

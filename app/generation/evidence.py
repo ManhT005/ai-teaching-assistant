@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.generation.contracts import ReasonCode
 from app.generation.safety import folded, is_sensitive_policy, is_unsafe
 from app.models import ChannelBinding, Classroom, Document, DocumentChunk
-from app.retrieval import (
+from app.retrieval.service import (
     AuthorizedScope,
     RetrievalResponse,
     RetrievedChunk,

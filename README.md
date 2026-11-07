@@ -79,7 +79,7 @@ files in ignored `data/raw/`. The guide and event JSON are excluded from indexin
 python -m scripts.inspect_sources --write-manifest data/raw/manifest.local.json
 
 # Download the pinned E5 revision once; subsequent commands use the local cache.
-python -m app.embeddings --download
+python -m app.knowledge.embeddings --download
 alembic upgrade head
 
 # Inspect uses the cached tokenizer; it does not load weights or access the DB.
@@ -183,13 +183,13 @@ and [acceptance report with misses](docs/testing/hybrid-retrieval-acceptance.md)
 - `app/api/` — health, readiness and mock webhook
 - `app/models.py` — class, channel mapping, documents, chunks, events, answers, tickets and usage
 - `app/db.py` — one SQLAlchemy connection/session setup
-- `app/ingestion.py`, `app/source_manifest.py` — parsers, trusted source metadata and canonical deduplication
-- `app/chunking.py`, `app/embeddings.py` — token-aware section chunks and pinned E5 CPU vectors
-- `app/knowledge_store.py` — staging, idempotency, atomic activation and revocation
-- `app/retrieval.py`, `app/lexical_search.py`, `app/rank_fusion.py` — shared scope, dense/FTS candidates and deterministic RRF
+- `app/knowledge/ingestion.py`, `app/knowledge/source_manifest.py` — parsers, trusted source metadata and canonical deduplication
+- `app/knowledge/chunking.py`, `app/knowledge/embeddings.py` — token-aware section chunks and pinned E5 CPU vectors
+- `app/knowledge/store.py` — staging, idempotency, atomic activation and revocation
+- `app/retrieval/service.py`, `app/retrieval/lexical.py`, `app/retrieval/fusion.py` — shared scope, dense/FTS candidates and deterministic RRF
 - `scripts/ingest_knowledge.py`, `scripts/smoke_vector_search.py` — operator CLI and scoped SQL diagnostic
 - `scripts/hybrid_search.py`, `scripts/evaluate_retrieval.py` — operator hybrid CLI and frozen quality comparison
-- `app/rag.py`, `app/handoff.py` — evidence contract and response text; processing remains Day 2–3 work
+- `app/generation/demo.py`, `app/events/messages.py` — evidence contract and response text; processing remains Day 2–3 work
 - `alembic/` — versioned database migration, including pgvector extension
 - `scripts/seed.py` — seed two demo classes and mock group bindings
 - `scripts/convert_sample_events.py`, `scripts/check_sample_materials.py` — local fixture adapter and parser checks

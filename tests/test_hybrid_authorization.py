@@ -3,7 +3,7 @@ from dataclasses import replace
 import pytest
 
 from app.models import ChannelBinding, Classroom
-from app.retrieval import (
+from app.retrieval.service import (
     ScopeAuthorizationError,
     resolve_authorized_scope,
     validate_authorized_scope,

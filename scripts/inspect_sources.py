@@ -7,7 +7,7 @@ from pathlib import Path
 
 from docx import Document
 
-from app.ingestion import SECTION_HEADING
+from app.knowledge.ingestion import SECTION_HEADING
 
 SOURCE_RULES = {
     "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx": (
