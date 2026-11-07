@@ -1,4 +1,5 @@
 """Minimal synchronous SQLAlchemy setup. No DB access during import."""
+
 from collections.abc import Generator
 from functools import lru_cache
 

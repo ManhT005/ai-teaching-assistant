@@ -1,4 +1,5 @@
 """Public API contracts (not database models)."""
+
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
 
@@ -25,4 +26,3 @@ class WebhookAck(BaseModel):
     status: str
     event_id: str
     detail: str | None = None
-

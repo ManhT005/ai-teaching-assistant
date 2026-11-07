@@ -1,4 +1,5 @@
 """Local fixture bindings and trigger syntax; never derive runtime scope from a client class ID."""
+
 import re
 
 DEMO_CLASSES = (
