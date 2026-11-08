@@ -23,6 +23,8 @@ def utc_now() -> datetime:
 
 class EventQueue:
     def __init__(self, sessions, *, lease_seconds: int = 120, max_attempts: int = 3):
+        if lease_seconds < 1 or max_attempts < 1:
+            raise ValueError("Lease and attempt limits must be positive")
         self.sessions = sessions
         self.lease_seconds = lease_seconds
         self.max_attempts = max_attempts

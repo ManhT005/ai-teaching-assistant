@@ -5,8 +5,10 @@ from datetime import UTC, datetime
 
 from sqlalchemy import select
 
+from app.config import get_settings
 from app.events.messages import insufficient_evidence_message
 from app.events.queue import ClaimedEvent, EventQueue, utc_now
+from app.events.retry import RetryPolicy
 from app.events.tickets import create_ticket, record_usage
 from app.generation.contracts import Citation, EventProcessingResult, ReasonCode, Usage
 from app.generation.evidence import sources_current
@@ -31,7 +33,16 @@ class EventProcessor:
     def __init__(self, sessions, pipeline):
         self.sessions = sessions
         self.pipeline = pipeline
-        self.queue = EventQueue(sessions)
+        settings = get_settings()
+        self.queue = EventQueue(
+            sessions,
+            lease_seconds=settings.event_lease_seconds,
+            max_attempts=settings.event_max_attempts,
+        )
+        self.retry_policy = RetryPolicy(
+            base_seconds=settings.event_backoff_base_seconds,
+            cap_seconds=settings.event_backoff_cap_seconds,
+        )
 
     def process_event(self, event_id: int) -> EventProcessingResult:
         if type(event_id) is not int or event_id < 1:
@@ -41,6 +52,11 @@ class EventProcessor:
         if claim is None:
             with self.sessions() as session:
                 return self._result(session, event_id)
+
+        return self.process_claim(claim)
+
+    def process_claim(self, claim: ClaimedEvent) -> EventProcessingResult:
+        event_id = claim.event_id
 
         try:
             if not self.queue.is_current(claim):
@@ -76,11 +92,16 @@ class EventProcessor:
         with self.sessions.begin() as session:
             event = session.get(Event, claim.event_id, with_for_update=True)
             if self._owns_lease(event, claim):
-                event.status = "FAILED_RETRYABLE" if retryable else "FAILED_FINAL"
-                event.last_error_code = reason.value
+                retry = retryable and claim.attempts < self.queue.max_attempts
+                event.status = "FAILED_RETRYABLE" if retry else "FAILED_FINAL"
+                event.last_error_code = (
+                    reason.value if retry else ("RETRIES_EXHAUSTED" if retryable else reason.value)
+                )
                 event.error_category = self._error_category(reason)
-                event.next_attempt_at = now() if retryable else None
-                event.finished_at = None if retryable else now()
+                event.next_attempt_at = (
+                    self.retry_policy.next_attempt_at(claim.attempts) if retry else None
+                )
+                event.finished_at = None if retry else now()
                 event.lease_token = None
                 event.lease_expires_at = None
                 event.worker_id = None
