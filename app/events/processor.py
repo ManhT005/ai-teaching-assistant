@@ -6,7 +6,8 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from app.config import get_settings
-from app.events.messages import insufficient_evidence_message
+from app.delivery.outbox import create_outbox
+from app.events.messages import handoff_acknowledgment, insufficient_evidence_message
 from app.events.queue import ClaimedEvent, EventQueue, utc_now
 from app.events.retry import RetryPolicy
 from app.events.tickets import create_ticket, record_usage
@@ -180,10 +181,24 @@ class EventProcessor:
                     )
                 )
                 record_usage(session, event_id, decision.usage)
+                create_outbox(
+                    session,
+                    event,
+                    kind="ANSWER_ACK",
+                    body=reply,
+                    citations=[citation.model_dump(mode="json") for citation in citations],
+                )
                 event.status = "ANSWERED"
             else:
                 create_ticket(session, event, reason)
                 record_usage(session, event_id, decision.usage)
+                create_outbox(
+                    session,
+                    event,
+                    kind="HANDOFF_ACK",
+                    body=handoff_acknowledgment(),
+                    citations=[],
+                )
                 event.status = "HANDOFF"
 
             event.finished_at = now()
