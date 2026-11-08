@@ -11,6 +11,7 @@ from test_hybrid_service import QueryEmbedding
 
 from app.config import Settings
 from app.events.processor import EventProcessor
+from app.generation.contracts import AnswerSelection
 from app.generation.evidence import EvidenceGate
 from app.generation.pipeline import AnswerPipeline
 from app.knowledge.ingestion import deduplicate_sources
@@ -36,10 +37,16 @@ def test_live_gemini_grounded_and_no_evidence_cases(authorized_contexts):
 
     class CountingGemini(GeminiLLM):
         calls = 0
+        selection_counts = None
 
         def generate(self, question, evidence):
             self.calls += 1
-            return super().generate(question, evidence)
+            response = super().generate(question, evidence)
+            selection = AnswerSelection.model_validate_json(response.text)
+            if self.selection_counts is None:
+                self.selection_counts = []
+            self.selection_counts.append(len(selection.quote_ids))
+            return response
 
     provider = CountingGemini(settings)
     processor = EventProcessor(
@@ -54,6 +61,7 @@ def test_live_gemini_grounded_and_no_evidence_cases(authorized_contexts):
         "mode": "live_gemini_with_deterministic_embeddings",
         "source": "supplied simulated PDF/DOCX/XLSX samples; pending comparison excluded",
         "model": settings.gemini_model,
+        "selection_contract": "quote-selection-v1.1",
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "cases": [],
     }
@@ -75,6 +83,7 @@ def test_live_gemini_grounded_and_no_evidence_cases(authorized_contexts):
             }
         )
     report["provider_requests"] = provider.calls
+    report["selected_quote_counts"] = provider.selection_counts
     Path(".pytest_cache/generation-live-smoke.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2),
         encoding="utf-8",
