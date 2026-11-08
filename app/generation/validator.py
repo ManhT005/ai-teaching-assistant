@@ -45,4 +45,41 @@ def validate_answer(raw: str, evidence: EvidenceDecision) -> tuple[ReasonCode, A
     except ValueError:
         return ReasonCode.UNSUPPORTED_CLAIM, None
 
-    return ReasonCode.GROUNDED_ANSWER, draft
+    reason = validate_composed_answer(draft, evidence)
+    return (reason, draft) if reason == ReasonCode.GROUNDED_ANSWER else (reason, None)
+
+
+def validate_composed_answer(draft: AnswerDraft, evidence: EvidenceDecision) -> ReasonCode:
+    """Recheck a server-composed draft immediately before persistence.
+
+    This is not a provider parser: validate_answer accepts selection JSON only.
+    Revalidation guards later mutation or an inconsistent internal pipeline result.
+    """
+    try:
+        draft = AnswerDraft.model_validate(draft.model_dump())
+        catalog = build_catalog(evidence)
+    except CatalogError:
+        return ReasonCode.INVALID_CITATION
+    except (ValidationError, AttributeError):
+        return ReasonCode.UNSUPPORTED_CLAIM
+
+    if draft.needs_handoff or draft.answer_text != "\n".join(claim.text for claim in draft.claims):
+        return ReasonCode.UNSUPPORTED_CLAIM
+
+    allowed = {(quote.chunk_id, quote.text) for quote in catalog.quotes}
+    chunk_ids = {quote.chunk_id for quote in catalog.quotes}
+    seen = set()
+    for claim in draft.claims:
+        chunk_id = claim.citation_ids[0]
+        pair = (chunk_id, claim.text)
+        if chunk_id not in chunk_ids:
+            return ReasonCode.INVALID_CITATION
+        if pair not in allowed or pair in seen:
+            return ReasonCode.UNSUPPORTED_CLAIM
+        if is_unsafe(claim.text):
+            return ReasonCode.UNSAFE_RESPONSE
+        if is_sensitive_policy(claim.text):
+            return ReasonCode.SENSITIVE_OR_POLICY
+        seen.add(pair)
+
+    return ReasonCode.GROUNDED_ANSWER

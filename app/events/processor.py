@@ -9,6 +9,7 @@ from app.events.messages import insufficient_evidence_message
 from app.events.tickets import create_ticket, record_usage
 from app.generation.contracts import Citation, EventProcessingResult, ReasonCode, Usage
 from app.generation.evidence import sources_current
+from app.generation.validator import validate_composed_answer
 from app.llm.provider import ProviderFailure
 from app.mock_channel import question_from_text
 from app.models import Answer, Event, ModelUsage, Ticket
@@ -98,6 +99,10 @@ class EventProcessor:
 
             reason = decision.reason
             draft = decision.draft
+            if draft is not None:
+                checked_reason = validate_composed_answer(draft, decision.evidence)
+                if checked_reason != ReasonCode.GROUNDED_ANSWER:
+                    reason, draft = checked_reason, None
             try:
                 valid = sources_current(
                     session,
@@ -115,19 +120,23 @@ class EventProcessor:
                 event.status = "FAILED_FINAL"
                 event.last_error_code = ReasonCode.SCOPE_REVOKED.value
             elif draft is not None and reason == ReasonCode.GROUNDED_ANSWER:
-                cited_ids = {chunk_id for claim in draft.claims for chunk_id in claim.citation_ids}
+                cited_ids = list(
+                    dict.fromkeys(
+                        chunk_id for claim in draft.claims for chunk_id in claim.citation_ids
+                    )
+                )
+                by_chunk = {hit.chunk_id: hit for hit in decision.evidence.hits}
                 citations = [
                     Citation(
-                        chunk_id=hit.chunk_id,
-                        doc_id=hit.doc_id,
-                        document_version=hit.version,
-                        section_id=hit.section_id,
-                        source_name=hit.source_name,
-                        locator=hit.locator,
-                        class_scope=hit.class_scope,
+                        chunk_id=chunk_id,
+                        doc_id=by_chunk[chunk_id].doc_id,
+                        document_version=by_chunk[chunk_id].version,
+                        section_id=by_chunk[chunk_id].section_id,
+                        source_name=by_chunk[chunk_id].source_name,
+                        locator=by_chunk[chunk_id].locator,
+                        class_scope=by_chunk[chunk_id].class_scope,
                     )
-                    for hit in decision.evidence.hits
-                    if hit.chunk_id in cited_ids
+                    for chunk_id in cited_ids
                 ]
                 numbers = {citation.chunk_id: i for i, citation in enumerate(citations, start=1)}
                 reply = "\n".join(
@@ -143,7 +152,7 @@ class EventProcessor:
                         source_chunks=[citation.model_dump() for citation in citations],
                         validation_summary={
                             "reason_code": reason.value,
-                            "policy": "extractive-paragraph-v1",
+                            "policy": "quote-selection-v1.1",
                             "claims_validated": len(draft.claims),
                         },
                         provider_request_id=decision.usage.request_id if decision.usage else None,

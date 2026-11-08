@@ -1,7 +1,9 @@
 """Fail-closed source snapshots and conservative paragraph coverage rules."""
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from sqlalchemy import select
 
@@ -83,8 +85,17 @@ def sources_current(session, scope: AuthorizedScope, hits, *, lock=False) -> boo
 @dataclass(frozen=True)
 class EvidenceDecision:
     reason: ReasonCode
-    evidence: dict[str, tuple[str, ...]]
+    evidence: Mapping[str, tuple[str, ...]]
     hits: tuple = ()
+
+    def __post_init__(self):
+        # One immutable request snapshot; provider receives a separate canonical copy.
+        object.__setattr__(
+            self,
+            "evidence",
+            MappingProxyType({chunk_id: tuple(units) for chunk_id, units in self.evidence.items()}),
+        )
+        object.__setattr__(self, "hits", tuple(self.hits))
 
     @property
     def sufficient(self) -> bool:
