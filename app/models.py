@@ -185,6 +185,11 @@ class Event(Base):
     processing_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_error_code: Mapped[str | None] = mapped_column(String(80))
+    lease_token: Mapped[str | None] = mapped_column(String(36))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    worker_id: Mapped[str | None] = mapped_column(String(120))
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error_category: Mapped[str | None] = mapped_column(String(60))
     # Client timestamp is preserved separately from the trusted server intake time.
     source_received_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     received_at: Mapped[datetime] = mapped_column(
@@ -231,3 +236,67 @@ class ModelUsage(Base):
     request_id: Mapped[str | None] = mapped_column(String(255))
     estimated_cost_usd: Mapped[float | None] = mapped_column(Numeric(12, 6))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class OutboxMessage(Base):
+    __tablename__ = "outbox_messages"
+    __table_args__ = (
+        UniqueConstraint("event_id", name="uq_outbox_event"),
+        UniqueConstraint("message_key", name="uq_outbox_message_key"),
+        CheckConstraint(
+            "status IN ('PENDING', 'SENDING', 'RETRY_WAIT', 'SENT', 'DEAD', 'SUPPRESSED')",
+            name="ck_outbox_status",
+        ),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id"), nullable=False)
+    message_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    channel: Mapped[str] = mapped_column(String(30), nullable=False)
+    group_id: Mapped[str] = mapped_column(String(160), nullable=False)
+    class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease_token: Mapped[str | None] = mapped_column(String(36))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    provider_message_id: Mapped[str | None] = mapped_column(String(160))
+    last_error_code: Mapped[str | None] = mapped_column(String(80))
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class MockDeliveredMessage(Base):
+    __tablename__ = "mock_delivered_messages"
+    __table_args__ = (
+        UniqueConstraint("outbox_id", name="uq_mock_delivery_outbox"),
+        UniqueConstraint("message_key", name="uq_mock_delivery_message_key"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    outbox_id: Mapped[int] = mapped_column(ForeignKey("outbox_messages.id"), nullable=False)
+    message_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    channel: Mapped[str] = mapped_column(String(30), nullable=False)
+    group_id: Mapped[str] = mapped_column(String(160), nullable=False)
+    class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    citations: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    delivered_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class RateLimitWindow(Base):
+    __tablename__ = "rate_limit_windows"
+    __table_args__ = (
+        UniqueConstraint("scope_type", "scope_key", "window_start", name="uq_rate_window"),
+        CheckConstraint("scope_type IN ('sender', 'group')", name="ck_rate_scope_type"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scope_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    scope_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    request_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
