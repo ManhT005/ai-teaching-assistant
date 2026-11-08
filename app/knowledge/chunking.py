@@ -4,8 +4,8 @@ import hashlib
 import json
 import re
 
-from app.embedding_contract import MAX_INPUT_TOKENS, PASSAGE_PREFIX
-from app.ingestion import KnowledgeChunk, SourceBlock
+from app.knowledge.embedding_contract import MAX_INPUT_TOKENS, PASSAGE_PREFIX
+from app.knowledge.ingestion import KnowledgeChunk, SourceBlock
 
 
 class IndexedChunk(KnowledgeChunk):

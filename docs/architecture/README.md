@@ -1,15 +1,31 @@
-# Architecture baseline — Day 1
+# Architecture
 
-- Decision: Lean Modular Monolith, FastAPI + PostgreSQL/pgvector.
-- The only externally-facing channel is a simulated mock webhook for this MVP.
-- Authorized class comes from a server-side channel binding; scope is filtered **inside retrieval SQL**.
-- FAQ sections can have different scopes: `GS-KPI-01`, `AUTO-N8N-01`, `COMMON`.
-- Document versions are staged and made active only after successful indexing.
-- No LLM-generated answer may be claimed grounded until citation/evidence checks are implemented and tested.
-- A persisted event is not a delivered answer; recovery/retry is a Day 4 deliverable.
-- PostgreSQL `vector` column is dimensionless in this skeleton; select embedding provider and enforce its dimension **before Day 2 ingestion**.
+The application is a modular monolith using FastAPI, SQLAlchemy and PostgreSQL 17
+with pgvector. The mock webhook authenticates the channel, resolves the group
+binding and stores events before acknowledging them.
 
-The DOCX architecture overview is a separate handover artifact. Detailed design and ADRs remain in the user's Day 1 reference documents.
+| Package | Responsibility |
+| --- | --- |
+| `app/api` | Health, readiness and authenticated mock intake |
+| `app/knowledge` | Source metadata, parsing, chunks, pinned E5 vectors and document lifecycle |
+| `app/retrieval` | Server-issued scope, dense/FTS candidates and reciprocal rank fusion |
+| `app/generation` | Evidence policy, strict claim contracts, safety and validation |
+| `app/llm` | Provider protocol, fake, Gemini and separated system/data prompts |
+| `app/events` | Atomic claim, finalization, tickets, usage and operator response text |
 
-The agreed webhook/sample contracts, PDF/DOCX/XLSX fixtures and demo evidence policy are documented in [sample_contracts.md](sample_contracts.md). Offline parsing is now available; embedding, indexing and end-to-end handoff remain pending.
+Shared database models, settings and session setup remain at the package root.
+Scripts are operator entrypoints; there is no public class-selectable ask API.
+The webhook ACK means stored, not answered or delivered.
+
+Detailed contracts:
+
+- [Sample and channel contracts](sample_contracts.md)
+- [Ingestion lifecycle and fixed embedding contract](ingestion_contract.md)
+- [Scoped hybrid retrieval](hybrid_retrieval.md)
+- [Grounded generation and handoff](grounded_generation.md)
+
+Only eligible reviewed active sources can be retrieved. The processor rechecks
+the binding and source snapshot before committing an answer. Network generation
+holds no database connection. Event locks and database guards ensure one internal
+Answer or Ticket outcome; recovery, bounded retries and delivery belong to Day 4.
 

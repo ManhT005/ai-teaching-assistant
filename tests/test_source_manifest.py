@@ -6,8 +6,8 @@ from docx import Document
 from openpyxl import load_workbook
 from pypdf import PdfWriter
 
-from app.ingestion import SourceMetadata, parse_document, parse_faq_xlsx
-from app.source_manifest import SourceManifest, load_manifest
+from app.knowledge.ingestion import SourceMetadata, parse_document, parse_faq_xlsx
+from app.knowledge.source_manifest import SourceManifest, load_manifest
 
 SAMPLES = Path(__file__).resolve().parents[1] / "data/samples"
 

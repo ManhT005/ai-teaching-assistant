@@ -1,0 +1,62 @@
+{
+  "mode": "live_gemini_with_deterministic_embeddings",
+  "source": "supplied simulated PDF/DOCX/XLSX samples; pending comparison excluded",
+  "model": "gemini-3.5-flash-lite",
+  "selection_contract": "quote-selection-v1.1",
+  "timestamp_utc": "2026-11-08T07:48:27.499696+00:00",
+  "cases": [
+    {
+      "id": "live-401",
+      "status": "ANSWERED",
+      "expected": "ANSWERED",
+      "reason_code": "GROUNDED_ANSWER",
+      "citation_sections": [
+        "AUTO-03"
+      ],
+      "usage": {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_tokens": 400,
+        "completion_tokens": 32,
+        "request_id": "TCnwasPKEOmL2roPr5_YmAo"
+      }
+    },
+    {
+      "id": "live-sumifs",
+      "status": "ANSWERED",
+      "expected": "ANSWERED",
+      "reason_code": "GROUNDED_ANSWER",
+      "citation_sections": [
+        "GS-02"
+      ],
+      "usage": {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "prompt_tokens": 429,
+        "completion_tokens": 32,
+        "request_id": "TSnwaqvLNcLjrfcPm4_wiAU"
+      }
+    },
+    {
+      "id": "live-comparison",
+      "status": "HANDOFF",
+      "expected": "HANDOFF",
+      "reason_code": "INCOMPLETE_EVIDENCE",
+      "citation_sections": [],
+      "usage": null
+    },
+    {
+      "id": "live-policy",
+      "status": "HANDOFF",
+      "expected": "HANDOFF",
+      "reason_code": "SENSITIVE_OR_POLICY",
+      "citation_sections": [],
+      "usage": null
+    }
+  ],
+  "provider_requests": 2,
+  "selected_quote_counts": [
+    1,
+    1
+  ]
+}

@@ -2,7 +2,7 @@
 
 Lean MVP for a teaching assistant using **FastAPI + PostgreSQL/pgvector + a simulated Zalo webhook**.
 
-> **Status:** Demo ingestion and hybrid retrieval are implemented: trusted sources, pinned E5 CPU embeddings, version activation/revoke, scoped exact cosine + PostgreSQL FTS + reciprocal rank fusion, operator CLI and a frozen retrieval benchmark. Health API, seed and authenticated event intake remain available. Student retrieval API, LLM answers, persisted teacher handoff, retries and real Zalo integration remain future work.
+> **Status:** Demo ingestion, scoped hybrid retrieval, grounded extractive generation and persisted teacher handoff are implemented. An operator CLI processes stored events with atomic claims, source revalidation, citations and usage audit. FakeLLM runs offline; Gemini is optional. Worker recovery/retries, outbound delivery and real Zalo integration remain future work.
 
 ## Architecture
 
@@ -11,7 +11,9 @@ Mock Zalo Webhook --> FastAPI (auth / class mapping / dedup) --> PostgreSQL
                                                               |
 Reviewed PDF/DOCX/FAQ --> Ingestion --> pgvector + FTS --> Hybrid retrieval
                                                               |
-                                                 Future Evidence Gate / Answer / Ticket
+                                        Evidence Gate --> LLM --> Answer Validator
+                                                              |
+                                           Operator processor --> Answer / Ticket
 ```
 
 One FastAPI process, one PostgreSQL service, no Redis, Celery or microservices.
@@ -45,7 +47,7 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/webhook/mock `
   -ContentType "application/json" -Body $body
 ```
 
-Expected: first event `accepted`, replay of the same `(channel,event_id)` `duplicate`. This **only stores the event**; no AI answer is generated yet. Unknown/inactive groups return 403. Client-supplied `class_id` and unexpected fields return 422. In authorized groups, bot messages, messages without the `/hoi` command, and empty questions are ignored. `/hoiday` is not a trigger.
+Expected: first event `accepted`, replay of the same `(channel,event_id)` `duplicate`. The webhook **only stores the event**; run the operator processor below to generate a decision. Unknown/inactive groups return 403. Client-supplied `class_id` and unexpected fields return 422. In authorized groups, bot messages, messages without the `/hoi` command, and empty questions are ignored. `/hoiday` is not a trigger.
 
 `received_at` must include a timezone. It is stored as `source_received_at`; the server's intake time remains in `events.received_at`. Existing installations must run `alembic upgrade head` for migration `0002_source_received_at`.
 
@@ -79,7 +81,7 @@ files in ignored `data/raw/`. The guide and event JSON are excluded from indexin
 python -m scripts.inspect_sources --write-manifest data/raw/manifest.local.json
 
 # Download the pinned E5 revision once; subsequent commands use the local cache.
-python -m app.embeddings --download
+python -m app.knowledge.embeddings --download
 alembic upgrade head
 
 # Inspect uses the cached tokenizer; it does not load weights or access the DB.
@@ -177,19 +179,74 @@ benchmark with automated source review; independent human label review has not
 been performed. See the [architecture](docs/architecture/hybrid_retrieval.md)
 and [acceptance report with misses](docs/testing/hybrid-retrieval-acceptance.md).
 
+## Grounded generation and teacher handoff
+
+Apply migration `0006_grounded_generation` with `python -m alembic upgrade head`.
+Keep `LLM_PROVIDER=fake` for offline operation. To call Gemini, set
+`LLM_PROVIDER=gemini`, `GEMINI_API_KEY` and `GEMINI_MODEL` in `.env` using
+[.env.example](.env.example). The model `gemini-3.5-flash-lite` was smoke-tested;
+an account-specific model can be configured.
+
+```powershell
+# Process at most five stored PENDING events; emit audit metadata.
+python -m scripts.process_pending_events --once --limit 5
+
+# Explicit operator preview, including reply and citation provenance.
+python -m scripts.process_pending_events --once --event-id 123 --preview
+```
+
+The internal event ID is the integer from the `events` table, not the external
+event string. Terminal reruns return the saved decision. `--preview` prints to the
+operator only; it sends no message to Zalo. Provider failures exit nonzero with
+`FAILED_RETRYABLE` or `FAILED_FINAL` and a reason. Only PENDING events are claimed;
+failed or abandoned PROCESSING events are not retried automatically.
+
+Answers quote 1–3 complete eligible paragraphs. The model selects temporary quote
+IDs; Python composes every claim from the original text and stable chunk identity.
+Every substantive question term must still be covered by each eligible paragraph.
+Selections with unknown/repeated IDs, extra model prose or excessive length are
+rejected as a whole. Citation metadata is deduplicated in first-selected order.
+Paraphrasing, comparisons and causal explanations are outside this bounded policy
+and can require handoff. Lexical coverage is not semantic proof. Commercial policy
+and missing evidence create an OPEN teacher ticket. Revoked authorization and
+provider errors have separate failure states. An Answer and Ticket cannot coexist
+for the same event. Token counts remain unknown (`null`) when metadata is missing;
+no cost is invented.
+
+For a dedicated, migrated PostgreSQL test database:
+
+```powershell
+$env:TEST_DATABASE_URL = '<test database URL; database name contains test or smoke>'
+python -m pytest -q --basetemp=.pytest_cache/test-tmp
+
+# Optional: at most two real Gemini calls using .env credentials and supplied
+# simulated sources. Retrieval embeddings are deterministic in this smoke.
+$env:RUN_LIVE_GENERATION = '1'
+python -m pytest -q tests/test_generation_live.py --basetemp=.pytest_cache/live-tmp
+Remove-Item Env:RUN_LIVE_GENERATION
+```
+
+See the [grounding ADR](docs/architecture/grounded_generation.md) and
+[selection/composition ADR](docs/architecture/multi_claim_selection.md),
+[multi-claim acceptance evidence](docs/testing/multiclaim-acceptance.md) and
+[operator runbook](docs/testing/grounded-generation-acceptance.md).
+
 ## Project map
 
 - `app/main.py` — API entrypoint
 - `app/api/` — health, readiness and mock webhook
 - `app/models.py` — class, channel mapping, documents, chunks, events, answers, tickets and usage
 - `app/db.py` — one SQLAlchemy connection/session setup
-- `app/ingestion.py`, `app/source_manifest.py` — parsers, trusted source metadata and canonical deduplication
-- `app/chunking.py`, `app/embeddings.py` — token-aware section chunks and pinned E5 CPU vectors
-- `app/knowledge_store.py` — staging, idempotency, atomic activation and revocation
-- `app/retrieval.py`, `app/lexical_search.py`, `app/rank_fusion.py` — shared scope, dense/FTS candidates and deterministic RRF
+- `app/knowledge/ingestion.py`, `app/knowledge/source_manifest.py` — parsers, trusted source metadata and canonical deduplication
+- `app/knowledge/chunking.py`, `app/knowledge/embeddings.py` — token-aware section chunks and pinned E5 CPU vectors
+- `app/knowledge/store.py` — staging, idempotency, atomic activation and revocation
+- `app/retrieval/service.py`, `app/retrieval/lexical.py`, `app/retrieval/fusion.py` — shared scope, dense/FTS candidates and deterministic RRF
 - `scripts/ingest_knowledge.py`, `scripts/smoke_vector_search.py` — operator CLI and scoped SQL diagnostic
 - `scripts/hybrid_search.py`, `scripts/evaluate_retrieval.py` — operator hybrid CLI and frozen quality comparison
-- `app/rag.py`, `app/handoff.py` — evidence contract and response text; processing remains Day 2–3 work
+- `app/generation/` — contracts, evidence policy, safety, validation and orchestration
+- `app/llm/` — Vietnamese prompt, deterministic fake and Gemini REST adapter
+- `app/events/` — atomic processing, persisted tickets, usage and safe response text
+- `scripts/process_pending_events.py` — operator processing and explicit reply preview
 - `alembic/` — versioned database migration, including pgvector extension
 - `scripts/seed.py` — seed two demo classes and mock group bindings
 - `scripts/convert_sample_events.py`, `scripts/check_sample_materials.py` — local fixture adapter and parser checks
@@ -207,5 +264,5 @@ and [acceptance report with misses](docs/testing/hybrid-retrieval-acceptance.md)
 | 4 | Webhook processing/recovery, controls, metrics |
 | 5 | Mandatory scenarios, report, demo and handover |
 
-**Security note:** The mock webhook token is only for local tests. Real Zalo OA/GMF access must be authorized and is out of the MVP scope. Deployment, real provider calls and all acceptance results require separate verification.
+**Security note:** The mock webhook token is only for local tests. Real Zalo OA/GMF access must be authorized and is out of the MVP scope. Offline and live-provider verification are reported separately; deployment and hosted CI require their own evidence.
 

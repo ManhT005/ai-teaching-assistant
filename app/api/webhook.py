@@ -1,9 +1,11 @@
-"""Authenticated local mock event receiver; processing is a future milestone.
+"""Authenticated local mock event receiver; operators process stored events separately.
 
 This endpoint persists one accepted event before acknowledgement. It does NOT
 call an LLM, create a reply, or claim exactly-once external delivery.
 """
+
 import secrets
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -11,8 +13,8 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_db
-from app.models import ChannelBinding, Event
 from app.mock_channel import question_from_text
+from app.models import ChannelBinding, Event
 from app.schemas import MockMessageEvent, WebhookAck
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
@@ -46,7 +48,9 @@ def mock_event(
     if payload.is_bot or question_from_text(payload.text) is None:
         return WebhookAck(status="ignored", event_id=payload.event_id)
     if not binding.classroom.bot_enabled:
-        return WebhookAck(status="ignored", event_id=payload.event_id, detail="Bot disabled for this class")
+        return WebhookAck(
+            status="ignored", event_id=payload.event_id, detail="Bot disabled for this class"
+        )
 
     query = (
         insert(Event)
@@ -69,5 +73,6 @@ def mock_event(
         return WebhookAck(status="duplicate", event_id=payload.event_id)
 
     response.status_code = status.HTTP_202_ACCEPTED
-    return WebhookAck(status="accepted", event_id=payload.event_id, detail="Stored; processing not implemented yet")
-
+    return WebhookAck(
+        status="accepted", event_id=payload.event_id, detail="Stored; awaiting operator processing"
+    )

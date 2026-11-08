@@ -1,6 +1,6 @@
 import pytest
 
-from app.rank_fusion import reciprocal_rank_fusion
+from app.retrieval.fusion import reciprocal_rank_fusion
 
 
 def test_exact_rrf_scores_and_one_hit_for_both_legs():

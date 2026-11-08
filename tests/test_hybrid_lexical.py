@@ -3,9 +3,9 @@ from sqlalchemy import event
 from sqlalchemy.orm import sessionmaker
 from test_ingestion_db import FakeEmbedding, section
 
-from app.knowledge_store import KnowledgeStore
-from app.lexical_search import extract_technical_terms, safe_or_query
-from app.retrieval import lexical_candidates
+from app.knowledge.store import KnowledgeStore
+from app.retrieval.lexical import extract_technical_terms, safe_or_query
+from app.retrieval.service import lexical_candidates
 
 
 def test_vietnamese_filler_produces_small_positive_or_query():

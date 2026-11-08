@@ -4,10 +4,10 @@ import argparse
 import json
 
 from app.db import get_session_factory
-from app.embedding_contract import MODEL_KEY
-from app.embeddings import EmbeddingService
-from app.retrieval import dense_candidates
-from app.source_manifest import CLASS_CODES
+from app.knowledge.embedding_contract import MODEL_KEY
+from app.knowledge.embeddings import EmbeddingService
+from app.knowledge.source_manifest import CLASS_CODES
+from app.retrieval.service import dense_candidates
 
 
 def search(session, authorized_class: str, query_vector: list[float], top_k: int = 3) -> list[dict]:

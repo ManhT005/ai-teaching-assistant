@@ -12,7 +12,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.schema import CreateSchema, DropSchema
 
 from app.models import ChannelBinding, Classroom
-from app.retrieval import resolve_authorized_scope
+from app.retrieval.service import resolve_authorized_scope
 
 
 def migrate(engine, revision="head", *, downgrade=False):
@@ -97,3 +97,43 @@ def authorized_contexts(rag_engine):
         }
 
     return sessions, contexts
+
+
+@pytest.fixture
+def generation_system(authorized_contexts):
+
+    from generation_samples import TEXT
+    from test_hybrid_service import QueryEmbedding
+    from test_ingestion_db import section
+
+    from app.generation.evidence import EvidenceGate
+    from app.generation.pipeline import AnswerPipeline
+    from app.knowledge.store import KnowledgeStore
+    from app.llm.provider import FakeLLM
+    from app.retrieval.service import HybridRetrievalService
+
+    sessions, contexts = authorized_contexts
+    embeddings = QueryEmbedding()
+    store = KnowledgeStore(sessions, embeddings)
+    store.ingest(
+        [
+            section(
+                TEXT,
+                doc_id="AUTO",
+                section_id="AUTO-03",
+                class_scope="AUTO-N8N-01",
+            )
+        ]
+    )
+    store.ingest(
+        [
+            section(
+                "SUMIFS: tính tổng theo nhiều điều kiện. Kiểm tra vùng dữ liệu.",
+                doc_id="GS",
+            )
+        ]
+    )
+    retrieval = HybridRetrievalService(sessions, embeddings)
+    gate = EvidenceGate(sessions)
+    pipeline = AnswerPipeline(retrieval, gate, FakeLLM())
+    return sessions, contexts, store, pipeline

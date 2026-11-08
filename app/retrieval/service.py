@@ -11,12 +11,12 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
-from app.embedding_contract import DIMENSION, MODEL_KEY
-from app.embeddings import validate_vector
-from app.lexical_search import extract_technical_terms, lexical_tsquery
+from app.knowledge.embedding_contract import DIMENSION, MODEL_KEY
+from app.knowledge.embeddings import validate_vector
+from app.knowledge.source_manifest import CLASS_CODES, ELIGIBLE_REVIEWS
 from app.models import ChannelBinding, Classroom, Document, DocumentChunk
-from app.rank_fusion import reciprocal_rank_fusion
-from app.source_manifest import CLASS_CODES, ELIGIBLE_REVIEWS
+from app.retrieval.fusion import reciprocal_rank_fusion
+from app.retrieval.lexical import extract_technical_terms, lexical_tsquery
 
 _SCOPE_PROOF = object()
 logger = logging.getLogger(__name__)

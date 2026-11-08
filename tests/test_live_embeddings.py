@@ -5,8 +5,8 @@ import os
 import pytest
 from test_ingestion_db import section
 
-from app.chunking import chunk_sections
-from app.embeddings import EmbeddingService, validate_vector
+from app.knowledge.chunking import chunk_sections
+from app.knowledge.embeddings import EmbeddingService, validate_vector
 
 
 def test_live_e5_vietnamese_vectors_and_exact_tokenizer_budget():

@@ -2,8 +2,14 @@
 import json
 from pathlib import Path
 
-from app.ingestion import SourceMetadata, deduplicate_sources, eligible_demo_chunks, parse_document, parse_faq_xlsx
-from app.rag import evaluate_demo_evidence
+from app.generation.demo import evaluate_demo_evidence
+from app.knowledge.ingestion import (
+    SourceMetadata,
+    deduplicate_sources,
+    eligible_demo_chunks,
+    parse_document,
+    parse_faq_xlsx,
+)
 
 SAMPLES = Path(__file__).resolve().parents[1] / "data" / "samples"
 

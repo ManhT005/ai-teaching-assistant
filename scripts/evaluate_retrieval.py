@@ -13,10 +13,10 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import select
 
 from app.db import get_session_factory
-from app.embedding_contract import MODEL_KEY
-from app.embeddings import EmbeddingService
+from app.knowledge.embedding_contract import MODEL_KEY
+from app.knowledge.embeddings import EmbeddingService
 from app.models import Document, DocumentChunk
-from app.retrieval import (
+from app.retrieval.service import (
     HybridRetrievalService,
     eligible_chunk_predicates,
     resolve_authorized_scope,

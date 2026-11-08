@@ -1,6 +1,8 @@
 """Liveness is independent of DB; readiness checks DB and pgvector."""
+
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
+
 from app.db import get_engine
 
 router = APIRouter(tags=["system"])
@@ -16,7 +18,9 @@ def ready():
     try:
         with get_engine().connect() as conn:
             conn.execute(text("SELECT 1"))
-            installed = conn.scalar(text("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector')"))
+            installed = conn.scalar(
+                text("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector')")
+            )
             if not installed:
                 raise RuntimeError("pgvector extension is not enabled")
     except Exception:

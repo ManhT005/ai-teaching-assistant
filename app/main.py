@@ -1,5 +1,7 @@
 """FastAPI entrypoint — Day 1 skeleton, no automatic schema creation."""
+
 from fastapi import FastAPI
+
 from app.api.health import router as health_router
 from app.api.webhook import router as webhook_router
 

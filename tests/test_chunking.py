@@ -1,5 +1,5 @@
-from app.chunking import chunk_sections
-from app.ingestion import KnowledgeChunk, SourceBlock
+from app.knowledge.chunking import chunk_sections
+from app.knowledge.ingestion import KnowledgeChunk, SourceBlock
 
 
 class CharacterTokenizer:

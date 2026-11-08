@@ -8,11 +8,11 @@ from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.chunking import digest
 from app.config import Settings
-from app.embedding_contract import DIMENSION, MODEL_KEY
-from app.ingestion import KnowledgeChunk
-from app.knowledge_store import KnowledgeStore
+from app.knowledge.chunking import digest
+from app.knowledge.embedding_contract import DIMENSION, MODEL_KEY
+from app.knowledge.ingestion import KnowledgeChunk
+from app.knowledge.store import KnowledgeStore
 from app.models import Document, DocumentChunk
 
 
@@ -232,7 +232,7 @@ def test_approved_demo_requires_and_persists_review_audit(store):
     with pytest.raises(ValueError, match="human review"):
         store.ingest([approved])
 
-    from app.ingestion import ReviewDecision
+    from app.knowledge.ingestion import ReviewDecision
 
     decision = ReviewDecision(
         reviewer="test-reviewer",

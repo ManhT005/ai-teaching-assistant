@@ -6,12 +6,12 @@ import logging
 from collections import Counter
 from pathlib import Path
 
-from app.chunking import chunk_sections
 from app.config import get_settings
 from app.db import get_session_factory
-from app.embeddings import EmbeddingService
-from app.knowledge_store import KnowledgeStore, group_documents
-from app.source_manifest import ELIGIBLE_REVIEWS, load_manifest
+from app.knowledge.chunking import chunk_sections
+from app.knowledge.embeddings import EmbeddingService
+from app.knowledge.source_manifest import ELIGIBLE_REVIEWS, load_manifest
+from app.knowledge.store import KnowledgeStore, group_documents
 
 
 def inspect_manifest(path: Path, embeddings: EmbeddingService) -> dict:

@@ -2,8 +2,8 @@ import math
 
 import pytest
 
-from app.embedding_contract import DIMENSION, PASSAGE_PREFIX, QUERY_PREFIX
-from app.embeddings import EmbeddingService, validate_vector
+from app.knowledge.embedding_contract import DIMENSION, PASSAGE_PREFIX, QUERY_PREFIX
+from app.knowledge.embeddings import EmbeddingService, validate_vector
 
 
 @pytest.mark.parametrize(

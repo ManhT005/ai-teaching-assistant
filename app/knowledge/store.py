@@ -8,13 +8,13 @@ from datetime import datetime, timezone
 
 from sqlalchemy import func, select, text, update
 
-from app.chunking import IndexedChunk, chunk_sections, digest
 from app.config import Settings, get_settings
-from app.embedding_contract import DIMENSION, MODEL_KEY
-from app.embeddings import validate_vector
-from app.ingestion import KnowledgeChunk
+from app.knowledge.chunking import IndexedChunk, chunk_sections, digest
+from app.knowledge.embedding_contract import DIMENSION, MODEL_KEY
+from app.knowledge.embeddings import validate_vector
+from app.knowledge.ingestion import KnowledgeChunk
+from app.knowledge.source_manifest import ELIGIBLE_REVIEWS, PARSER_REVISION
 from app.models import Document, DocumentChunk
-from app.source_manifest import ELIGIBLE_REVIEWS, PARSER_REVISION
 
 logger = logging.getLogger(__name__)
 
