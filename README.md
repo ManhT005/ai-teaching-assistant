@@ -201,8 +201,11 @@ operator only; it sends no message to Zalo. Provider failures exit nonzero with
 `FAILED_RETRYABLE` or `FAILED_FINAL` and a reason. Only PENDING events are claimed;
 failed or abandoned PROCESSING events are not retried automatically.
 
-Answers quote one complete eligible paragraph. Every substantive question term
-must be covered, and the draft must match an allowed quote with valid citations.
+Answers quote 1–3 complete eligible paragraphs. The model selects temporary quote
+IDs; Python composes every claim from the original text and stable chunk identity.
+Every substantive question term must still be covered by each eligible paragraph.
+Selections with unknown/repeated IDs, extra model prose or excessive length are
+rejected as a whole. Citation metadata is deduplicated in first-selected order.
 Paraphrasing, comparisons and causal explanations are outside this bounded policy
 and can require handoff. Lexical coverage is not semantic proof. Commercial policy
 and missing evidence create an OPEN teacher ticket. Revoked authorization and
@@ -224,7 +227,9 @@ Remove-Item Env:RUN_LIVE_GENERATION
 ```
 
 See the [grounding ADR](docs/architecture/grounded_generation.md) and
-[acceptance evidence and operator runbook](docs/testing/grounded-generation-acceptance.md).
+[selection/composition ADR](docs/architecture/multi_claim_selection.md),
+[multi-claim acceptance evidence](docs/testing/multiclaim-acceptance.md) and
+[operator runbook](docs/testing/grounded-generation-acceptance.md).
 
 ## Project map
 

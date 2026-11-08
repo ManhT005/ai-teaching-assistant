@@ -1,5 +1,12 @@
 # Grounded generation and teacher handoff acceptance
 
+Update 2026-11-08: GEN-11–GEN-14 replaces the one-paragraph provider contract with
+ID-only selection and deterministic composition of 1–3 full quotes. Current
+verification is **205 passed, 4 skipped**; see the
+[multi-claim report](multiclaim-acceptance.md) and
+[selection ADR](../architecture/multi_claim_selection.md).
+The sections below preserve the original Day 3 evidence and operator runbook.
+
 Date: 2026-11-07, Asia/Saigon. Branch: `feature/grounded-generation-handoff`.
 Validated implementation: `ad1b071` (with `30c6e0d` for constrained generation/live
 regression and a final key-pattern normalization fix). This report and accompanying

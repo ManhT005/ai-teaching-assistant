@@ -17,13 +17,20 @@ when the provider supplies no token metadata; cost is unknown.
 The MVP supports **extractive grounded answers**, not unrestricted paraphrasing.
 The pre-gate requires every substantive question term in one eligible paragraph,
 with explicit handling of comparison, policy and unsafe requests. A provider may
-select one complete allowed quote unit. Gemini receives dynamic enums for quote
-text and citation IDs. The post-gate verifies exact quote
-identity and citations and requires the answer body to equal the joined claims.
+select 1–3 allowed quote IDs. The catalog numbers at most eight full paragraphs
+in retrieval/source order; Gemini's response schema contains ID enums only.
+Python constructs AnswerDraft and each single-source claim from the catalog text.
+The post-gate rejects unknown/repeated IDs, prose fields and answers over 6,000
+characters without truncating paragraphs. The draft is checked again before
+persistence; citation metadata follows first-selected order and is deduplicated.
 This intentionally rejects paraphrases that cannot be verified by deterministic
 rules. It preserves negation and avoids treating lexical overlap as entailment.
 Term coverage is a conservative relevance heuristic, not semantic proof; a matching
 paragraph can still be incomplete or misleading. Human review remains necessary.
+
+See [ADR-GEN-02](multi_claim_selection.md) for the strict selection contract,
+canonical provider input and immutable request allowlist. This adds no database
+migration and does not change retrieval relevance or class authorization.
 
 Sources are checked against current eligible database rows before generation and
 again in the final transaction. Source rows and the binding/classroom are locked

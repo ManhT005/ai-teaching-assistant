@@ -1,0 +1,26 @@
+{
+  "source": "synthetic temporary regression data; not GOS course content",
+  "status": "ANSWERED",
+  "reason_code": "GROUNDED_ANSWER",
+  "reply_text": "1. 401: kiểm tra thời hạn token trong phần credentials. [1]\n2. 401: kiểm tra header Authorization trước khi thử lại. [2]\n3. AUTO-03 Synthetic test\n401: kiểm tra thông tin xác thực. Không gửi token lên nhóm. [2]",
+  "citations": [
+    {
+      "chunk_id": "a2f9208a8c9a5d4c451c320152ea3f316ac8ae76e37b61fbfb622c5d61d64053",
+      "doc_id": "MC-B",
+      "document_version": 1,
+      "section_id": "AUTO-04",
+      "source_name": "synthetic-multiclaim-test.txt",
+      "locator": "synthetic test paragraph",
+      "class_scope": "AUTO-N8N-01"
+    },
+    {
+      "chunk_id": "ddc6d0c88f8d3ae56faee11f1a1dd2c0da8173113a411a8920edd5f1a01aac00",
+      "doc_id": "MC-A",
+      "document_version": 1,
+      "section_id": "AUTO-03",
+      "source_name": "synthetic-multiclaim-test.txt",
+      "locator": "synthetic test paragraph",
+      "class_scope": "AUTO-N8N-01"
+    }
+  ]
+}
