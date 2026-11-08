@@ -6,7 +6,8 @@ no new PR or migration is needed. Baseline `d913dce` was fetched and fast-forwar
 before implementation. Baseline PR-triggered CI was verified successful:
 [run 42353713823](https://github.com/ManhT005/ai-teaching-assistant/actions/runs/42353713823).
 
-Validated implementation: `4f5d065b53aa849d23291d9bd3be0c2242b3b7d2`.
+Validated implementation: `317fa881469633e2a96ecc40e8340a29f6d4a735`
+(application/tests at `4f5d065`, plus clean-checkout evidence-directory handling).
 The documentation commit follows the tested implementation. Python 3.11.9,
 PostgreSQL 17/pgvector, dedicated `gos_generation_test` on `127.0.0.1:55432`.
 Tests use disposable schemas, not the application's database.
@@ -17,6 +18,7 @@ Tests use disposable schemas, not the application's database.
 | --- | --- |
 | Baseline full suite | 152 passed, 4 skipped |
 | Upgrade full suite | **205 passed, 4 skipped**, 50.60 seconds |
+| Archived clean-checkout full suite | **205 passed, 4 skipped**, 51.01 seconds |
 | Contract and composer/provider units | 29 passed |
 | Hardening/event targeted suite | 44 passed |
 | New multi-claim PostgreSQL cases | 18 tests; included in passing full suite |
@@ -24,7 +26,8 @@ Tests use disposable schemas, not the application's database.
 | Generation/provider/event lint | PASS |
 | Generation/provider/event formatting | PASS, 16 files checked |
 | Retrieval, knowledge, migration and frozen evaluation-data diff | Empty |
-| Latest hosted CI | Recorded after publishing; use [PR HEAD checks](https://github.com/ManhT005/ai-teaching-assistant/pull/4/checks) for the authoritative status |
+| Implementation hosted CI on `317fa88` | **PASS: 205 passed, 4 skipped**, 16.78 seconds; [run 42467385577](https://github.com/ManhT005/ai-teaching-assistant/actions/runs/42467385577) |
+| Final documentation-only HEAD | Use [PR HEAD checks](https://github.com/ManhT005/ai-teaching-assistant/pull/4/checks) for its separate authoritative status |
 | Independent format/source/semantic review | Still required; no human approval is claimed |
 
 The four default skips remain: live Gemini opt-in, live E5 opt-in and two ignored
@@ -32,6 +35,13 @@ original-source tests. Gemini was explicitly run separately. The unchanged E5
 contract was verified in the preceding Day 3 work; this extension does not claim a
 new combined E5-plus-Gemini quality evaluation. Original private files are still
 unavailable, so their two tests remain blocked rather than replaced with fixtures.
+
+The first extension CI run exposed a missing evidence-output directory in a
+clean checkout. Commit `317fa88` creates it explicitly; the subsequent hosted run
+and archived-checkout full suite pass. The archived run initially hit the known
+Windows sandbox temp-directory restriction in four parser fixtures; rerunning
+outside that restriction completed the full suite. No source or safety check was
+relaxed to resolve either environment issue.
 
 Commands used, with DATABASE_URL and TEST_DATABASE_URL set to the dedicated test DB:
 
