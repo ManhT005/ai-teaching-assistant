@@ -120,7 +120,9 @@ def test_persisted_claim_order_citation_dedup_and_replay(multiclaim_system, mode
     assert processor.process_event(event_id) == result
     assert provider.calls == 1
     if mode == "three":
-        Path(".pytest_cache/multiclaim-preview.json").write_text(
+        preview_path = Path(".pytest_cache/multiclaim-preview.json")
+        preview_path.parent.mkdir(parents=True, exist_ok=True)
+        preview_path.write_text(
             json.dumps(
                 {
                     "source": "synthetic temporary regression data; not GOS course content",

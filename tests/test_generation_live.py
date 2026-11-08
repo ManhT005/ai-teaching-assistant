@@ -84,7 +84,9 @@ def test_live_gemini_grounded_and_no_evidence_cases(authorized_contexts):
         )
     report["provider_requests"] = provider.calls
     report["selected_quote_counts"] = provider.selection_counts
-    Path(".pytest_cache/generation-live-smoke.json").write_text(
+    report_path = Path(".pytest_cache/generation-live-smoke.json")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
         json.dumps(report, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
