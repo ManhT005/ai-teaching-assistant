@@ -1,7 +1,7 @@
 # PR05 event reliability acceptance
 
-**Base:** `origin/develop` at `4fac46ee4ea6aaaa9b120793b51e7d5eaad7b77e`  
-**Branch:** `feature/event-reliability-mock-delivery`  
+**Base:** `origin/develop` at `4fac46ee4ea6aaaa9b120793b51e7d5eaad7b77e`
+**Branch:** `feature/event-reliability-mock-delivery`
 **Scope:** PostgreSQL event leases/recovery, transactional outbox, mock delivery,
 atomic webhook quotas and operator-only inspection. No real Zalo transport.
 
