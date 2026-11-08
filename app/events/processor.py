@@ -1,14 +1,14 @@
 """Claim stored events, release DB connections for generation, persist one outcome."""
 
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.delivery.outbox import create_outbox
 from app.events.messages import handoff_acknowledgment, insufficient_evidence_message
-from app.events.queue import ClaimedEvent, EventQueue, utc_now
+from app.events.queue import ClaimedEvent, EventQueue
 from app.events.retry import RetryPolicy
 from app.events.tickets import create_ticket, record_usage
 from app.generation.contracts import Citation, EventProcessingResult, ReasonCode, Usage
@@ -24,10 +24,6 @@ from app.retrieval.service import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def now():
-    return datetime.now(UTC)
 
 
 class EventProcessor:
@@ -92,7 +88,8 @@ class EventProcessor:
     def _failure(self, claim: ClaimedEvent, reason, *, retryable):
         with self.sessions.begin() as session:
             event = session.get(Event, claim.event_id, with_for_update=True)
-            if self._owns_lease(event, claim):
+            database_now = session.scalar(select(func.now()))
+            if self._owns_lease(event, claim, database_now):
                 retry = retryable and claim.attempts < self.queue.max_attempts
                 event.status = "FAILED_RETRYABLE" if retry else "FAILED_FINAL"
                 event.last_error_code = (
@@ -100,9 +97,11 @@ class EventProcessor:
                 )
                 event.error_category = self._error_category(reason)
                 event.next_attempt_at = (
-                    self.retry_policy.next_attempt_at(claim.attempts) if retry else None
+                    self.retry_policy.next_attempt_at(claim.attempts, now=database_now)
+                    if retry
+                    else None
                 )
-                event.finished_at = None if retry else now()
+                event.finished_at = None if retry else database_now
                 event.lease_token = None
                 event.lease_expires_at = None
                 event.worker_id = None
@@ -115,7 +114,8 @@ class EventProcessor:
         event_id = claim.event_id
         with self.sessions.begin() as session:
             event = session.get(Event, event_id, with_for_update=True)
-            if not self._owns_lease(event, claim):
+            database_now = session.scalar(select(func.now()))
+            if not self._owns_lease(event, claim, database_now):
                 return self._result(session, event_id)
 
             reason = decision.reason
@@ -201,7 +201,7 @@ class EventProcessor:
                 )
                 event.status = "HANDOFF"
 
-            event.finished_at = now()
+            event.finished_at = database_now
             event.lease_token = None
             event.lease_expires_at = None
             event.worker_id = None
@@ -213,13 +213,13 @@ class EventProcessor:
         return result
 
     @staticmethod
-    def _owns_lease(event: Event | None, claim: ClaimedEvent) -> bool:
+    def _owns_lease(event: Event | None, claim: ClaimedEvent, database_now: datetime) -> bool:
         return bool(
             event
             and event.status == "PROCESSING"
             and event.lease_token == claim.lease_token
             and event.lease_expires_at is not None
-            and event.lease_expires_at > utc_now()
+            and event.lease_expires_at > database_now
         )
 
     def _current_result(self, event_id: int):
