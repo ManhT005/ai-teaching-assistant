@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from conftest import migrate
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
@@ -17,6 +19,15 @@ def test_upgrade_and_downgrade_preserve_existing_outcome(rag_database_factory):
                     "sender_id, body, status, attempts) VALUES "
                     "('mock', 'migration-event', 'migration-group', :class_id, "
                     "'sender', '/hoi migration check', 'ANSWERED', 1) RETURNING id"
+                ),
+                {"class_id": classroom.id},
+            )
+            processing_id = session.scalar(
+                text(
+                    "INSERT INTO events (channel, external_event_id, group_id, class_id, "
+                    "sender_id, body, status, attempts) VALUES "
+                    "('mock', 'orphan-processing', 'migration-group', :class_id, "
+                    "'sender', '/hoi orphan', 'PROCESSING', 1) RETURNING id"
                 ),
                 {"class_id": classroom.id},
             )
@@ -41,6 +52,11 @@ def test_upgrade_and_downgrade_preserve_existing_outcome(rag_database_factory):
             assert event.status == "ANSWERED"
             assert event.lease_token is None
             assert answer.reply_text == "Kept through migration."
+            processing = session.execute(
+                text("SELECT lease_expires_at FROM events WHERE id = :event_id"),
+                {"event_id": processing_id},
+            ).one()
+            assert processing.lease_expires_at > datetime.now(UTC)
             assert session.query(OutboxMessage).count() == 0
 
         migrate(engine, "0006_grounded_generation", downgrade=True)

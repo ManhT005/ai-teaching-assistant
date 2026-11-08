@@ -25,6 +25,11 @@ def upgrade():
         ["status", "next_attempt_at", "received_at", "id"],
     )
     op.create_index("ix_events_lease_expiry", "events", ["lease_expires_at", "id"])
+    # Grace period lets a pre-migration worker finish before orphan recovery.
+    op.execute(
+        "UPDATE events SET lease_expires_at = now() + interval '120 seconds' "
+        "WHERE status = 'PROCESSING' AND lease_token IS NULL AND lease_expires_at IS NULL"
+    )
 
     op.create_table(
         "outbox_messages",
