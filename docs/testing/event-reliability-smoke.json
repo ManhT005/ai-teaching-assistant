@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "run_type": "local_postgresql_e2e_test_fixture",
+  "source_content": "existing deterministic test fixtures; not course approval",
+  "llm_provider": "FakeLLM",
+  "external_delivery": false,
+  "scenarios": [
+    {
+      "scenario": "authenticated_answer_flow",
+      "admission": "accepted",
+      "event_outcome": "ANSWERED",
+      "outbox": "SENT",
+      "mock_receipts": 1
+    },
+    {
+      "scenario": "terminal_duplicate",
+      "admission": "duplicate",
+      "persisted_events": 1,
+      "quota_charges": 1
+    },
+    {
+      "scenario": "insufficient_evidence",
+      "event_outcome": "HANDOFF",
+      "ticket": "OPEN",
+      "outbox": "SENT",
+      "acknowledgment_claims_teacher_replied": false
+    },
+    {
+      "scenario": "cross_class_scope",
+      "destination_binding_revalidated": true,
+      "citation_scope_matches_class": true
+    },
+    {
+      "scenario": "revoked_source_before_delivery",
+      "outbox": "SUPPRESSED",
+      "mock_receipts": 0
+    },
+    {
+      "scenario": "adapter_receipt_ack_crash_window",
+      "retry_reuses_message_key": true,
+      "unique_mock_receipts": 1
+    }
+  ],
+  "hosted_ci": "pending_push"
+}

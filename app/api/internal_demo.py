@@ -4,7 +4,7 @@ import secrets
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from sqlalchemy import case, extract, func, select
+from sqlalchemy import case, extract, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -21,7 +21,8 @@ from app.models import (
 
 
 def require_operator_auth(x_operator_token: str | None = Header(default=None)) -> None:
-    configured = get_settings().operator_api_token
+    configured_secret = get_settings().operator_api_token
+    configured = configured_secret.get_secret_value() if configured_secret else None
     if not configured:
         raise HTTPException(status_code=503, detail="Operator access is not configured")
     if not x_operator_token or not secrets.compare_digest(x_operator_token, configured):
@@ -61,15 +62,25 @@ def operations_metrics(db: Session = Depends(get_db)):  # noqa: B008 -- FastAPI 
             func.percentile_cont(0.95).within_group(duration_ms),
         ).where(Event.finished_at.is_not(None))
     ).one()
+    now = datetime.now(UTC)
+    event_due = or_(Event.next_attempt_at.is_(None), Event.next_attempt_at <= now)
+    outbox_due = or_(OutboxMessage.next_attempt_at.is_(None), OutboxMessage.next_attempt_at <= now)
     oldest_pending = db.scalar(
-        select(func.min(Event.received_at)).where(Event.status.in_(("PENDING", "FAILED_RETRYABLE")))
+        select(func.min(Event.received_at)).where(
+            or_(
+                (Event.status == "PENDING") & event_due,
+                (Event.status == "FAILED_RETRYABLE") & event_due,
+            )
+        )
     )
     oldest_outbox = db.scalar(
         select(func.min(OutboxMessage.created_at)).where(
-            OutboxMessage.status.in_(("PENDING", "RETRY_WAIT"))
+            or_(
+                (OutboxMessage.status == "PENDING") & outbox_due,
+                (OutboxMessage.status == "RETRY_WAIT") & outbox_due,
+            )
         )
     )
-    now = datetime.now(UTC)
     known_cost = db.scalar(select(func.sum(ModelUsage.estimated_cost_usd)))
     unknown_cost_events = db.scalar(
         select(func.count(func.distinct(ModelUsage.event_id))).where(

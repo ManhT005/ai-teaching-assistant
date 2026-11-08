@@ -1,6 +1,7 @@
 """Run the local mock outbox dispatcher as a separate worker process."""
 
 import argparse
+import json
 import signal
 from threading import Event
 
@@ -35,7 +36,9 @@ def main(argv=None, *, worker=None):
 
     worker = worker or build_worker()
     if args.once:
-        return worker.run_once(limit=args.limit, worker_id=args.worker_id)
+        statuses = worker.run_once(limit=args.limit, worker_id=args.worker_id)
+        print(json.dumps({"delivery_statuses": statuses}))
+        return statuses
 
     stop = Event()
     signal.signal(signal.SIGTERM, lambda *_: stop.set())

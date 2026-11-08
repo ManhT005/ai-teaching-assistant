@@ -11,8 +11,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     database_url: str | None = None
-    mock_webhook_token: str | None = None
-    operator_api_token: str | None = None
+    mock_webhook_token: SecretStr | None = None
+    operator_api_token: SecretStr | None = None
     event_max_attempts: int = Field(default=3, ge=1, le=10)
     event_lease_seconds: int = Field(default=120, ge=10, le=900)
     event_backoff_base_seconds: int = Field(default=2, ge=1, le=60)

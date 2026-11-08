@@ -4,8 +4,9 @@
 
 The mock webhook stores authenticated `/hoi` events. PostgreSQL acts as a bounded
 work queue. Independent event and delivery workers claim rows with short
-transactions, release database connections before model or adapter calls, and
-use changing lease tokens to fence stale workers. A grounded answer or an open
+transactions, use the PostgreSQL clock for due times and leases, release
+database connections before model or adapter calls, and use changing lease
+tokens to fence stale workers. A grounded answer or an open
 teacher ticket and its outbound notification are persisted atomically.
 
 The delivery adapter writes to a local mock inbox. `SENT` means that this mock

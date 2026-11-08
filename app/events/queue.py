@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 
 from app.models import Event
 
@@ -31,12 +31,12 @@ class EventQueue:
 
     def claim_event(self, event_id: int, *, worker_id: str = "inline") -> ClaimedEvent | None:
         with self.sessions.begin() as session:
+            now = session.scalar(select(func.now()))
             event = session.scalar(
                 select(Event).where(Event.id == event_id).with_for_update(skip_locked=True)
             )
             if event is None:
                 return None
-            now = utc_now()
             if event.attempts >= self.max_attempts:
                 if event.status in {"PENDING", "FAILED_RETRYABLE"} or (
                     event.status == "PROCESSING"
@@ -54,7 +54,7 @@ class EventQueue:
             raise ValueError("Claim limit must be between 1 and 100")
         claimed = []
         with self.sessions.begin() as session:
-            now = utc_now()
+            now = session.scalar(select(func.now()))
             due = or_(Event.next_attempt_at.is_(None), Event.next_attempt_at <= now)
             candidates = list(
                 session.scalars(
@@ -67,7 +67,7 @@ class EventQueue:
                         )
                     )
                     .order_by(Event.received_at, Event.id)
-                    .limit(limit * 2)
+                    .limit(limit)
                     .with_for_update(skip_locked=True)
                 )
             )
@@ -82,13 +82,16 @@ class EventQueue:
 
     def is_current(self, claim: ClaimedEvent) -> bool:
         with self.sessions() as session:
-            event = session.get(Event, claim.event_id)
-            return bool(
-                event
-                and event.status == "PROCESSING"
-                and event.lease_token == claim.lease_token
-                and event.lease_expires_at is not None
-                and event.lease_expires_at > utc_now()
+            return (
+                session.scalar(
+                    select(Event.id).where(
+                        Event.id == claim.event_id,
+                        Event.status == "PROCESSING",
+                        Event.lease_token == claim.lease_token,
+                        Event.lease_expires_at > func.now(),
+                    )
+                )
+                is not None
             )
 
     def _claim(self, event: Event, now: datetime, worker_id: str) -> ClaimedEvent:

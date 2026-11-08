@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 
-from sqlalchemy import delete
+from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 
 from app.models import RateLimitWindow
@@ -24,7 +24,7 @@ class RateLimitService:
         self.window_seconds = window_seconds
 
     def reserve(self, session, *, channel: str, group_id: str, sender_id: str, now=None) -> int:
-        instant = now or datetime.now(UTC)
+        instant = now or session.scalar(select(func.now()))
         bucket = int(instant.timestamp()) // self.window_seconds * self.window_seconds
         window_start = datetime.fromtimestamp(bucket, UTC)
         retry_after = max(

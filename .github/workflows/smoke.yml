@@ -29,10 +29,33 @@ jobs:
           python-version: "3.11"
       - run: pip install 'torch>=2,<3' --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r requirements.txt
+      - run: pip install 'ruff>=0.11,<1'
       - run: alembic upgrade head
       - run: python -m scripts.seed
       - run: python -m scripts.seed
       - run: python -m scripts.check_sample_materials
+      - run: >-
+          ruff check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
+          app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
+          app/events/retry.py app/events/worker.py app/main.py app/models.py
+          alembic/versions/0007_event_reliability_mock_delivery.py
+          scripts/run_event_worker.py scripts/run_delivery_worker.py
+          scripts/cleanup_rate_limits.py
+          tests/test_config_secrets.py tests/test_event_delivery_e2e.py tests/test_event_queue.py tests/test_event_retry.py
+          tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
+          tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
+          tests/test_worker_recovery.py
+      - run: >-
+          ruff format --check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
+          app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
+          app/events/retry.py app/events/worker.py app/main.py app/models.py
+          alembic/versions/0007_event_reliability_mock_delivery.py
+          scripts/run_event_worker.py scripts/run_delivery_worker.py
+          scripts/cleanup_rate_limits.py
+          tests/test_config_secrets.py tests/test_event_delivery_e2e.py tests/test_event_queue.py tests/test_event_retry.py
+          tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
+          tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
+          tests/test_worker_recovery.py
       - run: python -m pytest -q --junitxml=test-results.xml
       - uses: actions/upload-artifact@v4
         if: always()

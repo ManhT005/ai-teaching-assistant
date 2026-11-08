@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from app.events.processor import EventProcessor
 from app.events.queue import EventQueue
 from app.generation.contracts import ReasonCode
+from app.llm.provider import FakeLLM
 from app.models import Answer, Event, ModelUsage, Ticket
 
 
@@ -18,7 +19,7 @@ def add_pending(sessions, scope):
             group_id=scope.group_id,
             class_id=scope.class_id,
             sender_id="queue-test",
-            body="/hoi question",
+            body="/hoi n8n 401 Unauthorized",
         )
         session.add(event)
         session.flush()
@@ -64,7 +65,7 @@ def test_one_event_has_one_live_claim_and_reclaim_fences_old_token(generation_sy
 
 def test_ten_competing_claimers_only_acquire_available_events(generation_system):
     sessions, contexts, _, _ = generation_system
-    event_id = add_pending(sessions, contexts["AUTO-N8N-01"])
+    event_ids = [add_pending(sessions, contexts["AUTO-N8N-01"]) for _ in range(10)]
     barrier = Barrier(10)
 
     def claim(_):
@@ -74,8 +75,8 @@ def test_ten_competing_claimers_only_acquire_available_events(generation_system)
     with ThreadPoolExecutor(max_workers=10) as workers:
         claims = list(workers.map(claim, range(10)))
     owners = [claim[0] for claim in claims if claim]
-    assert len(owners) == 1
-    assert owners[0].event_id == event_id
+    assert len(owners) == 10
+    assert sorted(owner.event_id for owner in owners) == sorted(event_ids)
 
 
 def test_expired_lease_at_attempt_limit_is_terminalized(generation_system):
@@ -94,3 +95,68 @@ def test_expired_lease_at_attempt_limit_is_terminalized(generation_system):
         assert event.status == "FAILED_FINAL"
         assert event.last_error_code == "RETRIES_EXHAUSTED"
         assert event.lease_token is None
+
+
+def test_retryable_event_is_not_claimed_before_due_time(generation_system):
+    sessions, contexts, _, _ = generation_system
+    event_id = add_pending(sessions, contexts["AUTO-N8N-01"])
+    queue = EventQueue(sessions)
+    first = queue.claim_event(event_id)
+    assert first is not None
+    with sessions.begin() as session:
+        event = session.get(Event, event_id)
+        event.status = "FAILED_RETRYABLE"
+        event.next_attempt_at = event.lease_expires_at
+        event.lease_token = None
+        event.lease_expires_at = None
+        event.worker_id = None
+
+    assert queue.claim_event(event_id) is None
+    with sessions() as session:
+        assert session.get(Event, event_id).attempts == 1
+
+
+def test_due_retry_claim_gets_new_fencing_token(generation_system):
+    sessions, contexts, _, _ = generation_system
+    event_id = add_pending(sessions, contexts["AUTO-N8N-01"])
+    queue = EventQueue(sessions)
+    first = queue.claim_event(event_id)
+    with sessions.begin() as session:
+        event = session.get(Event, event_id)
+        event.status = "FAILED_RETRYABLE"
+        event.next_attempt_at = event.lease_expires_at.replace(year=2020)
+        event.lease_token = None
+        event.lease_expires_at = None
+        event.worker_id = None
+
+    second = queue.claim_event(event_id)
+    assert second is not None
+    assert second.lease_token != first.lease_token
+    assert second.attempts == 2
+
+
+def test_stale_generation_cannot_finalize_after_reclaim(generation_system):
+    sessions, contexts, _, pipeline = generation_system
+    event_id = add_pending(sessions, contexts["AUTO-N8N-01"])
+    processor = EventProcessor(sessions, pipeline)
+    queue = processor.queue
+
+    class ReclaimDuringGeneration(FakeLLM):
+        def generate(self, question, evidence):
+            with sessions.begin() as session:
+                event = session.get(Event, event_id)
+                event.lease_expires_at = event.lease_expires_at.replace(year=2020)
+            replacement = queue.claim_event(event_id, worker_id="replacement-worker")
+            assert replacement is not None
+            return super().generate(question, evidence)
+
+    pipeline.provider = ReclaimDuringGeneration()
+    result = processor.process_event(event_id)
+    assert result.status == "PROCESSING"
+    with sessions() as session:
+        event = session.get(Event, event_id)
+        assert event.attempts == 2
+        assert event.worker_id == "replacement-worker"
+        assert session.scalar(select(func.count()).select_from(Answer)) == 0
+        assert session.scalar(select(func.count()).select_from(Ticket)) == 0
+        assert session.scalar(select(func.count()).select_from(ModelUsage)) == 0

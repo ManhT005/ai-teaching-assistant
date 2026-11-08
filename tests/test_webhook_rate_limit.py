@@ -46,7 +46,14 @@ def rate_client(rag_engine, monkeypatch):
         get_settings.cache_clear()
 
 
-def post(client, *, sender="sender-1", event_id=None, group="mock-ai-automation"):
+def post(
+    client,
+    *,
+    sender="sender-1",
+    event_id=None,
+    group="mock-ai-automation",
+    text="/hoi rate test",
+):
     return client.post(
         "/webhook/mock",
         headers={"X-Webhook-Token": "local-rate-test"},
@@ -54,7 +61,7 @@ def post(client, *, sender="sender-1", event_id=None, group="mock-ai-automation"
             "event_id": event_id or uuid4().hex,
             "group_id": group,
             "sender_id": sender,
-            "text": "/hoi rate test",
+            "text": text,
             "received_at": "2026-11-08T12:00:00+07:00",
         },
     )
@@ -83,6 +90,30 @@ def test_duplicate_is_deduplicated_before_quota_even_when_full(rate_client):
     assert post(client, event_id="new-event-same-sender").status_code == 429
     with sessions() as session:
         assert session.scalar(select(func.count()).select_from(Event)) == 1
+
+
+def test_concurrent_duplicate_webhooks_charge_quota_once(rate_client):
+    client, sessions = rate_client
+    event_id = uuid4().hex
+    with ThreadPoolExecutor(max_workers=8) as workers:
+        responses = list(workers.map(lambda _: post(client, event_id=event_id), range(8)))
+    assert sum(response.status_code == 202 for response in responses) == 1
+    assert sum(response.status_code == 200 for response in responses) == 7
+    with sessions() as session:
+        assert session.scalar(select(func.count()).select_from(Event)) == 1
+        assert session.scalar(select(func.sum(RateLimitWindow.request_count))) == 2
+
+
+def test_duplicate_with_altered_payload_does_not_replace_stored_event(rate_client):
+    client, sessions = rate_client
+    event_id = uuid4().hex
+    assert post(client, event_id=event_id).status_code == 202
+    replay = post(client, event_id=event_id, text="/hoi changed question")
+    assert replay.status_code == 200
+    with sessions() as session:
+        event = session.scalar(select(Event).where(Event.external_event_id == event_id))
+        assert event.body == "/hoi rate test"
+        assert session.scalar(select(func.sum(RateLimitWindow.request_count))) == 2
 
 
 def test_group_limit_is_atomic_under_concurrent_senders(rate_client, monkeypatch):

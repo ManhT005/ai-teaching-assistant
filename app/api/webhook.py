@@ -24,7 +24,8 @@ router = APIRouter(prefix="/webhook", tags=["webhook"])
 def require_mock_auth(
     x_webhook_token: str | None = Header(default=None),
 ) -> None:
-    configured = get_settings().mock_webhook_token
+    configured_secret = get_settings().mock_webhook_token
+    configured = configured_secret.get_secret_value() if configured_secret else None
     if not configured:
         raise HTTPException(status_code=503, detail="Mock webhook is not configured")
     if not x_webhook_token or not secrets.compare_digest(x_webhook_token, configured):

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 
 from app.delivery.contracts import DeliveryMessage
 from app.models import Event, OutboxMessage
@@ -35,7 +35,7 @@ class OutboxQueue:
             raise ValueError("Claim limit must be between 1 and 100")
         claims = []
         with self.sessions.begin() as session:
-            now = utc_now()
+            now = session.scalar(select(func.now()))
             due = or_(OutboxMessage.next_attempt_at.is_(None), OutboxMessage.next_attempt_at <= now)
             candidates = list(
                 session.scalars(
@@ -49,7 +49,7 @@ class OutboxQueue:
                         )
                     )
                     .order_by(OutboxMessage.created_at, OutboxMessage.id)
-                    .limit(limit * 2)
+                    .limit(limit)
                     .with_for_update(skip_locked=True)
                 )
             )
@@ -75,13 +75,16 @@ class OutboxQueue:
 
     def is_current(self, claim: ClaimedOutbox) -> bool:
         with self.sessions() as session:
-            row = session.get(OutboxMessage, claim.outbox_id)
-            return bool(
-                row
-                and row.status == "SENDING"
-                and row.lease_token == claim.lease_token
-                and row.lease_expires_at is not None
-                and row.lease_expires_at > utc_now()
+            return (
+                session.scalar(
+                    select(OutboxMessage.id).where(
+                        OutboxMessage.id == claim.outbox_id,
+                        OutboxMessage.status == "SENDING",
+                        OutboxMessage.lease_token == claim.lease_token,
+                        OutboxMessage.lease_expires_at > func.now(),
+                    )
+                )
+                is not None
             )
 
     def get_message(self, claim: ClaimedOutbox) -> DeliveryMessage:

@@ -1,8 +1,6 @@
 """Idempotent local inbox adapter; it never calls a real channel API."""
 
-from datetime import UTC, datetime
-
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 
 from app.delivery.contracts import DeliveryLeaseLost, DeliveryReceipt, DeliverySuppressed
@@ -30,7 +28,7 @@ class MockReplyAdapter:
                 and outbox.status == "SENDING"
                 and outbox.lease_token == message.lease_token
                 and outbox.lease_expires_at is not None
-                and outbox.lease_expires_at > datetime.now(UTC)
+                and outbox.lease_expires_at > session.scalar(select(func.now()))
             ):
                 raise DeliveryLeaseLost()
             existing = session.scalar(

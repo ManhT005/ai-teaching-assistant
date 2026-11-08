@@ -1,10 +1,12 @@
 """Fenced outbox dispatch with bounded retries and sanitized error codes."""
 
-from datetime import UTC, datetime
+from datetime import timedelta
 from threading import Event as StopEvent
 
+from sqlalchemy import func, select
+
 from app.delivery.contracts import DeliveryFailure, DeliveryLeaseLost, DeliverySuppressed
-from app.delivery.outbox import OutboxQueue, utc_now
+from app.delivery.outbox import OutboxQueue
 from app.events.retry import RetryPolicy
 from app.models import OutboxMessage
 
@@ -39,7 +41,6 @@ class DeliveryWorker:
                     claim,
                     status="SENT",
                     provider_message_id=receipt.external_message_id,
-                    sent_at=utc_now(),
                 )
             statuses.append(status)
         return statuses
@@ -62,8 +63,14 @@ class DeliveryWorker:
         return self._finish(
             claim,
             status="RETRY_WAIT" if retry else "DEAD",
-            error="MOCK_DELIVERY_FAILURE" if retry else "DELIVERY_RETRIES_EXHAUSTED",
-            next_attempt_at=self.retry_policy.next_attempt_at(claim.attempts) if retry else None,
+            error=(
+                "MOCK_DELIVERY_FAILURE"
+                if retry
+                else "DELIVERY_RETRIES_EXHAUSTED"
+                if retryable
+                else "MOCK_DELIVERY_PERMANENT_FAILURE"
+            ),
+            retry_delay=self.retry_policy.delay_seconds(claim.attempts) if retry else None,
         )
 
     def _finish(
@@ -75,22 +82,28 @@ class DeliveryWorker:
         provider_message_id=None,
         sent_at=None,
         next_attempt_at=None,
+        retry_delay=None,
     ):
         with self.sessions.begin() as session:
             row = session.get(OutboxMessage, claim.outbox_id, with_for_update=True)
+            database_now = session.scalar(select(func.now()))
             if not (
                 row
                 and row.status == "SENDING"
                 and row.lease_token == claim.lease_token
                 and row.lease_expires_at is not None
-                and row.lease_expires_at > datetime.now(UTC)
+                and row.lease_expires_at > database_now
             ):
                 return None
             row.status = status
             row.last_error_code = error
             row.provider_message_id = provider_message_id
-            row.sent_at = sent_at
-            row.next_attempt_at = next_attempt_at
+            row.sent_at = database_now if status == "SENT" else sent_at
+            row.next_attempt_at = (
+                database_now + timedelta(seconds=retry_delay)
+                if retry_delay is not None
+                else next_attempt_at
+            )
             row.lease_token = None
             row.lease_expires_at = None
             return status
