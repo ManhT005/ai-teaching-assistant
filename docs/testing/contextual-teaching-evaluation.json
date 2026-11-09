@@ -2,10 +2,14 @@
   "evaluation_version": "contextual-teaching-v1",
   "baseline_commit": "d4d4b3aee4154f5f052f0d16662ed6cffb9a2205",
   "baseline_suite": {"passed": 258, "skipped": 4},
-  "implementation_suite": {"passed": 269, "skipped": 4, "failed": 0},
+  "implementation_suite": {"passed": 345, "skipped": 4, "failed": 0, "duration_seconds": 82.09},
   "implementation_suite_commit": "recorded_in_final_change_summary",
   "checks": {
     "context_resolution_contracts": "passed",
+    "explicit_subject_classifier_regression": "passed",
+    "context_security_postgresql": {"passed": 11},
+    "teaching_planner_contracts_and_pipeline": {"passed": 12},
+    "synthetic_fixture_contracts": {"passed": 40, "failed": 0},
     "fresh_source_evidence_required": "passed",
     "answer_ticket_xor_and_mock_delivery_regression": "passed",
     "migration_upgrade": "passed",
@@ -16,14 +20,18 @@
   },
   "dataset": {
     "path": "data/samples/contextual_teaching_eval_cases.json",
-    "case_count": 8,
+    "case_count": 40,
+    "dev_count": 32,
+    "holdout_candidate_count": 8,
+    "holdout_sealed": false,
     "origin": "synthetic_demo",
     "review_status": "pending_independent_review",
     "quality_gate_eligible": false
   },
   "latency_and_cost": "not_measured",
   "notes": [
-    "The implementation suite count is from PostgreSQL-backed pytest after migration downgrade and secret-redaction regressions passed.",
+    "Full PostgreSQL-backed pytest after classifier, context security, planner and 40-fixture contract regressions.",
+    "Holdout candidates are public, synthetic and pending review; they are not an independent sealed benchmark.",
     "No contextual accuracy or human clarity score is claimed.",
     "The four skips are unchanged provider or environment gated skips."
   ]

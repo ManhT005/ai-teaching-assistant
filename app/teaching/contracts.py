@@ -22,3 +22,4 @@ class TeachingPlan:
     coverage: ClaimCoverage
     claim_order: tuple[int, ...]
     reason: ReasonCode
+    claim_labels: tuple[ClaimCoverage, ...] = ()

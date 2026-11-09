@@ -225,6 +225,9 @@ class EventProcessor:
                             "claims_validated": len(draft.claims),
                             "teaching_intent": plan.intent.value if plan else None,
                             "claim_coverage": plan.coverage.value if plan else None,
+                            "claim_labels": [label.value for label in plan.claim_labels]
+                            if plan
+                            else [],
                         },
                         provider_request_id=decision.usage.request_id if decision.usage else None,
                     )
@@ -245,6 +248,9 @@ class EventProcessor:
                         **(ticket.evidence_summary or {}),
                         "teaching_intent": decision.teaching_plan.intent.value,
                         "claim_coverage": decision.teaching_plan.coverage.value,
+                        "claim_labels": [
+                            label.value for label in decision.teaching_plan.claim_labels
+                        ],
                     }
                 record_usage(session, event_id, decision.usage)
                 create_outbox(

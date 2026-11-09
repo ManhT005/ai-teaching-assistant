@@ -60,4 +60,4 @@ def plan_teaching(question: str, draft: AnswerDraft, evidence: EvidenceDecision)
             reason = ReasonCode.INCOMPLETE_EVIDENCE
         else:
             order = examples + tuple(i for i in order if i not in examples)
-    return TeachingPlan(intent, coverage, order, reason)
+    return TeachingPlan(intent, coverage, order, reason, tuple(labels))
