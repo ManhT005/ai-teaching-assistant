@@ -197,6 +197,28 @@ class Event(Base):
     )
 
 
+class EventContextResolution(Base):
+    __tablename__ = "event_context_resolutions"
+    __table_args__ = (
+        CheckConstraint("jsonb_array_length(prior_event_ids) <= 5", name="ck_context_prior_count"),
+        CheckConstraint(
+            "resolution_status IN ('STANDALONE', 'RESOLVED', 'AMBIGUOUS', 'NO_CONTEXT', 'INVALID')",
+            name="ck_context_status",
+        ),
+        CheckConstraint("length(resolved_query) <= 700", name="ck_context_query_length"),
+    )
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("events.id", ondelete="CASCADE"), primary_key=True
+    )
+    prior_event_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    resolution_status: Mapped[str] = mapped_column(String(20), nullable=False)
+    intent: Mapped[str] = mapped_column(String(30), nullable=False)
+    resolved_query: Mapped[str] = mapped_column(String(700), nullable=False)
+    original_query_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    rewriter_revision: Mapped[str] = mapped_column(String(40), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class Answer(Base):
     __tablename__ = "answers"
     id: Mapped[int] = mapped_column(primary_key=True)
