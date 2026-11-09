@@ -20,9 +20,15 @@ class DeliveryWorker:
         self.retry_policy = RetryPolicy(base_seconds=2, cap_seconds=60)
 
     def run_once(self, *, limit=10, worker_id="delivery-worker"):
-        claims = self.queue.claim_due(limit=limit, worker_id=worker_id)
+        if not 1 <= limit <= 100:
+            raise ValueError("Dispatch limit must be between 1 and 100")
         statuses = []
-        for claim in claims:
+        for _ in range(limit):
+            # Never lease messages in bulk while earlier sends might block.
+            claims = self.queue.claim_due(limit=1, worker_id=worker_id)
+            if not claims:
+                break
+            claim = claims[0]
             if not self.queue.is_current(claim):
                 continue
             message = self.queue.get_message(claim)
