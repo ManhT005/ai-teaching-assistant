@@ -26,7 +26,7 @@ from app.retrieval.service import (
 )
 
 _SECRET = re.compile(r"(?i)(?:api[_-]?key|token|password|secret)\s*[:=]\s*\S+")
-REVISION = "context-rewrite-v1"
+REVISION = "context-rewrite-v2"
 
 
 def _safe_question(text: str) -> str | None:

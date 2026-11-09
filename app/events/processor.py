@@ -25,7 +25,7 @@ from app.retrieval.service import (
     normalize_question,
     resolve_authorized_scope,
 )
-from app.teaching.formatter import format_teaching_reply
+from app.teaching.formatter import format_planned_reply, format_teaching_reply
 
 logger = logging.getLogger(__name__)
 
@@ -198,12 +198,20 @@ class EventProcessor:
                     for chunk_id in cited_ids
                 ]
                 numbers = {citation.chunk_id: i for i, citation in enumerate(citations, start=1)}
+                plan = decision.teaching_plan
+                claims = (
+                    [draft.claims[index] for index in plan.claim_order]
+                    if plan is not None
+                    else draft.claims
+                )
                 reply = "\n".join(
                     f"{index}. {claim.text} "
                     + " ".join(f"[{numbers[chunk_id]}]" for chunk_id in claim.citation_ids)
-                    for index, claim in enumerate(draft.claims, start=1)
+                    for index, claim in enumerate(claims, start=1)
                 )
-                if teaching_intent is not None:
+                if plan is not None:
+                    reply = format_planned_reply(plan.intent, reply)
+                elif teaching_intent is not None:
                     reply = format_teaching_reply(teaching_intent, reply)
                 session.add(
                     Answer(
@@ -215,6 +223,8 @@ class EventProcessor:
                             "reason_code": reason.value,
                             "policy": "quote-selection-v1.1",
                             "claims_validated": len(draft.claims),
+                            "teaching_intent": plan.intent.value if plan else None,
+                            "claim_coverage": plan.coverage.value if plan else None,
                         },
                         provider_request_id=decision.usage.request_id if decision.usage else None,
                     )
@@ -229,7 +239,13 @@ class EventProcessor:
                 )
                 event.status = "ANSWERED"
             else:
-                create_ticket(session, event, reason)
+                ticket = create_ticket(session, event, reason)
+                if decision.teaching_plan is not None:
+                    ticket.evidence_summary = {
+                        **(ticket.evidence_summary or {}),
+                        "teaching_intent": decision.teaching_plan.intent.value,
+                        "claim_coverage": decision.teaching_plan.coverage.value,
+                    }
                 record_usage(session, event_id, decision.usage)
                 create_outbox(
                     session,

@@ -44,4 +44,4 @@ class QueryResolution:
     standalone_question: str
     antecedent_event_ids: tuple[int, ...]
     reason: ResolutionReason
-    revision: str = "context-rewrite-v1"
+    revision: str = "context-rewrite-v2"

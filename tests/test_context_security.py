@@ -2,13 +2,13 @@ from datetime import timedelta
 
 import pytest
 from sqlalchemy import func, select
+from test_context_reliability import _add_event
 
 from app.context.resolver import ContextResolver
 from app.events.processor import EventProcessor
 from app.llm.provider import ProviderFailure
 from app.models import ChannelBinding, Document, Event, EventContextResolution, OutboxMessage
 from app.retrieval.service import ScopeAuthorizationError
-from test_context_reliability import _add_event
 
 
 def delivered_turn(system):
