@@ -20,6 +20,7 @@ from app.generation.safety import is_sensitive_policy, is_unsafe
 from app.models import Answer, Document, DocumentChunk, Event, EventContextResolution, OutboxMessage
 from app.retrieval.service import (
     AuthorizedScope,
+    ScopeAuthorizationError,
     eligible_chunk_predicates,
     validate_authorized_scope,
 )
@@ -48,6 +49,12 @@ class ContextResolver:
             if event is None:
                 raise ValueError("Context requires a stored event")
             validate_authorized_scope(session, scope)
+            if (event.channel, event.group_id, event.class_id) != (
+                scope.channel,
+                scope.group_id,
+                scope.class_id,
+            ):
+                raise ScopeAuthorizationError("Context scope does not match the stored event")
             normalized = " ".join(question.split())
             redacted = _SECRET.sub("[redacted]", normalized)
             unsafe_input = redacted != normalized or is_unsafe(normalized)

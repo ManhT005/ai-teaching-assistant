@@ -1,5 +1,26 @@
+import pytest
+
 from app.context.contracts import ContextTurn, ResolutionStatus, TeachingIntent
 from app.context.rewriter import resolve_query
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "Cho em ví dụ về SUMIFS",
+        "Cho em ví dụ SUMIFS",
+        "Ví dụ về HTTP 403?",
+        "Giải thích SUMIFS",
+        "Tại sao n8n trả lỗi 401?",
+        "Example of SUMIFS",
+    ],
+)
+@pytest.mark.parametrize("history", [(), (ContextTurn(7, "n8n HTTP 401 Unauthorized"),)])
+def test_explicit_subject_never_inherits_history(question, history):
+    result = resolve_query(8, question, history)
+    assert result.status == ResolutionStatus.STANDALONE
+    assert result.standalone_question == question
+    assert result.antecedent_event_ids == ()
 
 
 def test_independent_question_ignores_context():
