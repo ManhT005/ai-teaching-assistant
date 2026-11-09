@@ -8,6 +8,8 @@ from app.generation.evidence_catalog import CatalogError, build_catalog
 from app.generation.validator import validate_answer
 from app.llm.provider import LLMProvider
 from app.retrieval.service import normalize_question
+from app.teaching.contracts import TeachingPlan
+from app.teaching.planner import plan_teaching
 
 
 @dataclass(frozen=True)
@@ -16,6 +18,7 @@ class PipelineDecision:
     evidence: EvidenceDecision
     draft: AnswerDraft | None = None
     usage: Usage | None = None
+    teaching_plan: TeachingPlan | None = None
 
 
 class AnswerPipeline:
@@ -41,4 +44,7 @@ class AnswerPipeline:
 
         generated = self.provider.generate(question, catalog.provider_evidence())
         reason, draft = validate_answer(generated.text, evidence)
-        return PipelineDecision(reason, evidence, draft, generated.usage)
+        plan = plan_teaching(question, draft, evidence) if draft is not None else None
+        if plan is not None and plan.reason != ReasonCode.GROUNDED_ANSWER:
+            reason, draft = plan.reason, None
+        return PipelineDecision(reason, evidence, draft, generated.usage, plan)

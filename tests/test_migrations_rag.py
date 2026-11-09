@@ -8,7 +8,7 @@ def test_fresh_schema_has_fixed_vector_and_lifecycle_constraints(rag_engine):
     with rag_engine.connect() as connection:
         assert (
             connection.scalar(text("SELECT version_num FROM alembic_version"))
-            == "0007_event_reliability"
+            == "0008_contextual_teaching"
         )
         vector_type = connection.scalar(
             text("""
@@ -30,6 +30,22 @@ def test_fresh_schema_has_fixed_vector_and_lifecycle_constraints(rag_engine):
     assert "source_received_at" in {
         column["name"] for column in inspect(rag_engine).get_columns("events")
     }
+
+
+def test_context_snapshot_migration_can_downgrade_and_upgrade(rag_database_factory):
+    with rag_database_factory() as engine:
+        inspector = inspect(engine)
+        assert inspector.has_table("event_context_resolutions", schema=engine.rag_test_schema)
+
+        migrate(engine, "0007_event_reliability", downgrade=True)
+
+        inspector = inspect(engine)
+        assert not inspector.has_table("event_context_resolutions", schema=engine.rag_test_schema)
+
+        migrate(engine)
+
+        inspector = inspect(engine)
+        assert inspector.has_table("event_context_resolutions", schema=engine.rag_test_schema)
 
 
 def test_day_one_upgrade_keeps_legacy_rows_but_requires_reindex(rag_database_factory):
