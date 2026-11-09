@@ -56,6 +56,18 @@ jobs:
           tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
           tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
           tests/test_worker_recovery.py tests/test_worker_claim_timing.py
+      - run: >-
+          ruff check app/teacher app/faq app/workflow_models.py app/api/teacher.py app/api/faq.py
+          app/knowledge/store.py alembic/env.py alembic/versions/0009_teacher_faq_workflow.py
+          scripts/seed_teacher_demo.py scripts/run_teacher_reply_worker.py scripts/staff_request.py
+          tests/test_teacher_workflow.py tests/test_faq_workflow.py tests/test_teacher_faq_migrations.py
+          tests/teacher_faq_helpers.py tests/conftest.py
+      - run: >-
+          ruff format --check app/teacher app/faq app/workflow_models.py app/api/teacher.py app/api/faq.py
+          app/knowledge/store.py alembic/env.py alembic/versions/0009_teacher_faq_workflow.py
+          scripts/seed_teacher_demo.py scripts/run_teacher_reply_worker.py scripts/staff_request.py
+          tests/test_teacher_workflow.py tests/test_faq_workflow.py tests/test_teacher_faq_migrations.py
+          tests/teacher_faq_helpers.py tests/conftest.py
       - run: python -m pytest -q --junitxml=test-results.xml
       - uses: actions/upload-artifact@v4
         if: always()

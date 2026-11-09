@@ -1,4 +1,4 @@
-"""FastAPI entrypoint — Day 1 skeleton, no automatic schema creation."""
+"""Scoped teaching demo and authenticated staff workflow; explicit migrations."""
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -12,7 +12,7 @@ from app.teacher.contracts import WorkflowError
 
 app = FastAPI(
     title="GOS Academy AI Teaching Assistant",
-    description="Lean MVP skeleton; no real Zalo or AI answers on Day 1.",
+    description="Class-scoped grounded teaching, human handoff and reviewed FAQ; mock delivery.",
     version="0.1.0",
 )
 app.include_router(health_router)
