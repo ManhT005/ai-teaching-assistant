@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select, text, update
 
@@ -25,7 +25,7 @@ def _lock(session, logical_key: str) -> None:
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def group_documents(sections: list[KnowledgeChunk]) -> list[list[KnowledgeChunk]]:
@@ -138,7 +138,7 @@ class KnowledgeStore:
             else:
                 self._activate(document_id, logical_key, chunks, activation_guard=activation_guard)
 
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 -- sanitize external indexing failures
             self._fail(document_id, type(error).__name__)
             # Provider/DB exception messages can contain source content or SQL parameters.
             raise RuntimeError(
@@ -350,6 +350,20 @@ class KnowledgeStore:
             )
 
             return result.rowcount
+
+    def confirm_active(self, logical_key: str, document_id: int, activation_guard):
+        """Reconcile an existing version under the same lock order as activation."""
+        with self.sessions.begin() as session:
+            _lock(session, logical_key)
+            document = session.get(Document, document_id, with_for_update=True)
+            if (
+                document is None
+                or document.logical_key != logical_key
+                or not document.active
+                or document.index_status != "READY"
+            ):
+                raise ValueError("Expected active source is unavailable")
+            activation_guard(session, document)
 
     def status(self) -> list[dict]:
         with self.sessions() as session:

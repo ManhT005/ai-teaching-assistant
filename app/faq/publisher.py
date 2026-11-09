@@ -143,9 +143,7 @@ class FAQPublisher:
             result = self.store.ingest(sections, activation_guard=activate)
             if result["status"] == "skipped":
                 # Reconcile a previous active version without embedding or duplicate activation.
-                with self.sessions.begin() as session:
-                    document = session.get(Document, result["document_id"], with_for_update=True)
-                    activate(session, document)
+                self.store.confirm_active(f"teacher-faq-{faq_id}", result["document_id"], activate)
         except Exception:  # noqa: BLE001 -- external/parser exceptions may contain reviewed content
             with self.sessions.begin() as session:
                 session.get(Ticket, candidate.ticket_id, with_for_update=True)
@@ -164,7 +162,9 @@ class FAQPublisher:
         # KnowledgeStore takes the document advisory lock before the candidate lock,
         # matching activation order and making source withdrawal one transaction.
         def withdraw(session):
-            candidate = scoped_candidate(session, identity, faq_id, roles=("OPERATOR",), lock=True)
+            candidate = scoped_candidate(
+                session, identity, faq_id, roles=("OPERATOR",), lock=True, validate_origin=False
+            )
             if candidate.revision != command.expected_version:
                 raise WorkflowError("STALE_FAQ_REVISION")
             ticket = session.get(Ticket, candidate.ticket_id)
@@ -192,4 +192,6 @@ class FAQPublisher:
             f"teacher-faq-{faq_id}", "STAFF_FAQ_WITHDRAWAL", revocation_guard=withdraw
         )
         with self.sessions() as session:
-            return faq_view(session, scoped_candidate(session, identity, faq_id))
+            return faq_view(
+                session, scoped_candidate(session, identity, faq_id, validate_origin=False)
+            )

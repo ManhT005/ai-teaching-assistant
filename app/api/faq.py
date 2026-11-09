@@ -70,7 +70,11 @@ def publish_faq(
     command: Command,
     identity=Depends(staff_identity),
     publisher=Depends(faq_publisher),
+    db=Depends(get_db),
 ):
+    # Release the authentication query's connection before embedding. The
+    # publisher rechecks identity in its own short transactions.
+    db.rollback()
     return publisher.publish(identity, faq_id, command)
 
 

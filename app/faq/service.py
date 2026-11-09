@@ -24,7 +24,9 @@ def content_hash(content):
     )
 
 
-def scoped_candidate(session, identity, faq_id, *, roles=ALL_ROLES, lock=False):
+def scoped_candidate(
+    session, identity, faq_id, *, roles=ALL_ROLES, lock=False, validate_origin=True
+):
     query = select(FAQCandidate).where(
         FAQCandidate.id == faq_id,
         FAQCandidate.class_id.in_(granted_classes(session, identity, roles)),
@@ -43,7 +45,8 @@ def scoped_candidate(session, identity, faq_id, *, roles=ALL_ROLES, lock=False):
     candidate = session.scalar(query)
     if candidate is None:
         raise WorkflowError("WORKFLOW_NOT_FOUND", 404)
-    origin_scope(session, session.get(Ticket, candidate.ticket_id))
+    if validate_origin:
+        origin_scope(session, session.get(Ticket, candidate.ticket_id))
     return candidate
 
 
