@@ -20,6 +20,11 @@ Reviewed sources --> Ingestion --> pgvector + FTS --> Hybrid retrieval --> Evide
 One FastAPI service, separate event and delivery worker processes, one PostgreSQL
 service; no Redis, Celery or external message broker.
 
+Follow-up interpretation uses at most five same-sender answered turns from the
+same bound group/class within 20 minutes. The history only helps identify a
+topic; answers still require fresh retrieval and exact reviewed-source quotes.
+See `CONTEXT_*` limits in `.env.example`. Free semantic paraphrasing is disabled.
+
 ## Local setup (PowerShell)
 
 Requirements: Python 3.11+; Docker Desktop with Docker Compose.

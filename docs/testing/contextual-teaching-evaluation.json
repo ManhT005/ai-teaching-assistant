@@ -1,0 +1,30 @@
+{
+  "evaluation_version": "contextual-teaching-v1",
+  "baseline_commit": "d4d4b3aee4154f5f052f0d16662ed6cffb9a2205",
+  "baseline_suite": {"passed": 258, "skipped": 4},
+  "implementation_suite": {"passed": 269, "skipped": 4, "failed": 0},
+  "implementation_suite_commit": "recorded_in_final_change_summary",
+  "checks": {
+    "context_resolution_contracts": "passed",
+    "fresh_source_evidence_required": "passed",
+    "answer_ticket_xor_and_mock_delivery_regression": "passed",
+    "migration_upgrade": "passed",
+    "migration_downgrade": "passed",
+    "reviewed_followup_accuracy": "not_measured",
+    "independent_holdout": "not_available",
+    "semantic_paraphrasing": "disabled"
+  },
+  "dataset": {
+    "path": "data/samples/contextual_teaching_eval_cases.json",
+    "case_count": 8,
+    "origin": "synthetic_demo",
+    "review_status": "pending_independent_review",
+    "quality_gate_eligible": false
+  },
+  "latency_and_cost": "not_measured",
+  "notes": [
+    "The implementation suite count is from PostgreSQL-backed pytest after migration downgrade and secret-redaction regressions passed.",
+    "No contextual accuracy or human clarity score is claimed.",
+    "The four skips are unchanged provider or environment gated skips."
+  ]
+}
