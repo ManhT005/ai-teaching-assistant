@@ -11,7 +11,7 @@ atomic webhook quotas and operator-only inspection. No real Zalo transport.
 - Fresh per-test schemas upgraded through `0007_event_reliability`; populated
   upgrade/downgrade preserves existing Answer rows and gives legacy `PROCESSING`
   rows a 120-second recovery grace period.
-- Full suite on the final implementation: **254 passed, 4 skipped**.
+- Prior implementation-head hosted CI: **254 passed, 4 skipped, 0 failed** ([push run 42559079718](https://github.com/ManhT005/ai-teaching-assistant/actions/runs/42559079718)). New worker claim-timing regression and final HEAD CI must be verified separately before merge.
 - Ruff lint and format checks pass for all changed Python modules, migration and
   tests. JUnit: `.pytest_cache/event-reliability-junit.xml` (local/ignored).
 - E2E uses the existing deterministic FakeLLM and test database. It verifies
@@ -65,7 +65,7 @@ atomic webhook quotas and operator-only inspection. No real Zalo transport.
 | T39 | SAFE FALLBACK | Injection request creates a ticket; mock output contains no requested secret |
 | T40 | SAFE FALLBACK | RAG vs Fine-tuning remains a handoff because source material is still pending |
 | T41 | PASS | Operator token, aggregate metrics, unknown cost and redaction tests |
-| T42 | LOCAL PASS / HOSTED PENDING | Migration and full local suite pass; hosted CI awaits a pushed branch |
+| T42 | BASELINE HOSTED PASS / NEW HEAD PENDING | Pushed implementation CI: 254 passed, 4 skipped, 0 failed; latest worker lease fix needs its own CI |
 
 The seven demo outcomes are therefore: n8n 401 `PASS (simulated)`, tuition
 `SAFE FALLBACK`, class isolation `PASS`, duplicate `PASS`, injection `SAFE
@@ -75,8 +75,9 @@ test result changes source review status or gold labels.
 
 ## Boundaries and remaining merge gates
 
-- This branch is local and based on `origin/develop`; it has not been pushed, so
-  hosted CI, PR review and reviewer sign-off remain pending.
+- This branch has been pushed based on `origin/develop`. Hosted implementation CI passed.
+  The lease-timing fix for sequential worker claims is included in the pushed branch;
+  its latest HEAD checks and reviewer sign-off remain mandatory before merge.
 - The test suite uses FakeLLM. Real Gemini multi-step retry cost/behavior is not
   claimed here; provider HTTP mapping has transport-mock coverage.
 - `SENT` means a mock PostgreSQL receipt exists. External network delivery is
@@ -89,3 +90,14 @@ test result changes source review status or gold labels.
 See [event reliability architecture](../architecture/event_reliability.md) and
 the root [README](../../README.md) for startup, worker, operator and cleanup
 commands.
+
+## Review hardening: worker lease timing
+
+Review found that claiming an entire batch before performing sequential model calls
+could expire the leases of later events while they waited behind a slow LLM call.
+The event and delivery worker now claim one item **immediately before** processing
+it, up to the configured per-poll limit, with no waiting batch holding leases.
+`tests/test_worker_claim_timing.py` verifies both workers issue only single-item
+claims and never begin the next claim until the prior operation completes.
+This is a throughput trade-off appropriate for the single-process polling MVP;
+future parallel workers can use independent per-item leases and bounded concurrency.
