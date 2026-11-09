@@ -23,6 +23,7 @@ Detailed contracts:
 - [Ingestion lifecycle and fixed embedding contract](ingestion_contract.md)
 - [Scoped hybrid retrieval](hybrid_retrieval.md)
 - [Grounded generation and handoff](grounded_generation.md)
+- [Event reliability and mock delivery](event_reliability.md)
 
 Only eligible reviewed active sources can be retrieved. The processor rechecks
 the binding and source snapshot before committing an answer. Network generation

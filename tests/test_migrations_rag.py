@@ -8,7 +8,7 @@ def test_fresh_schema_has_fixed_vector_and_lifecycle_constraints(rag_engine):
     with rag_engine.connect() as connection:
         assert (
             connection.scalar(text("SELECT version_num FROM alembic_version"))
-            == "0006_grounded_generation"
+            == "0007_event_reliability"
         )
         vector_type = connection.scalar(
             text("""

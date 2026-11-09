@@ -8,13 +8,14 @@ import secrets
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.api.admission import admit_event
 from app.config import get_settings
 from app.db import get_db
+from app.events.rate_limit import RateLimitExceeded
 from app.mock_channel import question_from_text
-from app.models import ChannelBinding, Event
+from app.models import ChannelBinding
 from app.schemas import MockMessageEvent, WebhookAck
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
@@ -23,7 +24,8 @@ router = APIRouter(prefix="/webhook", tags=["webhook"])
 def require_mock_auth(
     x_webhook_token: str | None = Header(default=None),
 ) -> None:
-    configured = get_settings().mock_webhook_token
+    configured_secret = get_settings().mock_webhook_token
+    configured = configured_secret.get_secret_value() if configured_secret else None
     if not configured:
         raise HTTPException(status_code=503, detail="Mock webhook is not configured")
     if not x_webhook_token or not secrets.compare_digest(x_webhook_token, configured):
@@ -34,7 +36,7 @@ def require_mock_auth(
 def mock_event(
     payload: MockMessageEvent,
     response: Response,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db),  # noqa: B008 -- FastAPI resolves request-scoped dependencies.
 ):
     binding = db.scalar(
         select(ChannelBinding).where(
@@ -52,25 +54,21 @@ def mock_event(
             status="ignored", event_id=payload.event_id, detail="Bot disabled for this class"
         )
 
-    query = (
-        insert(Event)
-        .values(
-            channel=payload.channel,
-            external_event_id=payload.event_id,
-            group_id=payload.group_id,
-            class_id=binding.class_id,
-            sender_id=payload.sender_id,
-            body=payload.text,
-            source_received_at=payload.received_at,
-            status="PENDING",
-        )
-        .on_conflict_do_nothing(constraint="uq_event_external")
-        .returning(Event.id)
-    )
-    created_id = db.scalar(query)
-    db.commit()
+    try:
+        created_id = admit_event(db, payload, class_id=binding.class_id, settings=get_settings())
+    except RateLimitExceeded as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=429,
+            detail="Webhook request rate limit exceeded",
+            headers={"Retry-After": str(error.retry_after)},
+        ) from None
+
     if created_id is None:
+        db.commit()
         return WebhookAck(status="duplicate", event_id=payload.event_id)
+
+    db.commit()
 
     response.status_code = status.HTTP_202_ACCEPTED
     return WebhookAck(

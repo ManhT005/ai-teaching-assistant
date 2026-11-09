@@ -1,11 +1,15 @@
 """Claim stored events, release DB connections for generation, persist one outcome."""
 
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select
 
-from app.events.messages import insufficient_evidence_message
+from app.config import get_settings
+from app.delivery.outbox import create_outbox
+from app.events.messages import handoff_acknowledgment, insufficient_evidence_message
+from app.events.queue import ClaimedEvent, EventQueue
+from app.events.retry import RetryPolicy
 from app.events.tickets import create_ticket, record_usage
 from app.generation.contracts import Citation, EventProcessingResult, ReasonCode, Usage
 from app.generation.evidence import sources_current
@@ -22,36 +26,38 @@ from app.retrieval.service import (
 logger = logging.getLogger(__name__)
 
 
-def now():
-    return datetime.now(UTC)
-
-
 class EventProcessor:
     def __init__(self, sessions, pipeline):
         self.sessions = sessions
         self.pipeline = pipeline
+        settings = get_settings()
+        self.queue = EventQueue(
+            sessions,
+            lease_seconds=settings.event_lease_seconds,
+            max_attempts=settings.event_max_attempts,
+        )
+        self.retry_policy = RetryPolicy(
+            base_seconds=settings.event_backoff_base_seconds,
+            cap_seconds=settings.event_backoff_cap_seconds,
+        )
 
     def process_event(self, event_id: int) -> EventProcessingResult:
         if type(event_id) is not int or event_id < 1:
             raise ValueError("Use a positive internal event ID")
 
-        with self.sessions.begin() as session:
-            claimed = session.scalar(
-                update(Event)
-                .where(Event.id == event_id, Event.status == "PENDING")
-                .values(
-                    status="PROCESSING",
-                    attempts=Event.attempts + 1,
-                    processing_started_at=now(),
-                    finished_at=None,
-                    last_error_code=None,
-                )
-                .returning(Event.id)
-            )
-            if claimed is None:
+        claim = self.queue.claim_event(event_id)
+        if claim is None:
+            with self.sessions() as session:
                 return self._result(session, event_id)
 
+        return self.process_claim(claim)
+
+    def process_claim(self, claim: ClaimedEvent) -> EventProcessingResult:
+        event_id = claim.event_id
+
         try:
+            if not self.queue.is_current(claim):
+                return self._current_result(claim.event_id)
             with self.sessions() as session:
                 event = session.get(Event, event_id)
                 scope = resolve_authorized_scope(
@@ -66,35 +72,50 @@ class EventProcessor:
             try:
                 question = normalize_question(question)
             except ValueError:
-                return self._failure(event_id, ReasonCode.INVALID_EVENT, retryable=False)
+                return self._failure(claim, ReasonCode.INVALID_EVENT, retryable=False)
 
             decision = self.pipeline.run(question, scope)
-            return self._persist(event_id, scope, decision)
+            return self._persist(claim, scope, decision)
 
         except ScopeAuthorizationError:
-            return self._failure(event_id, ReasonCode.SCOPE_REVOKED, retryable=False)
+            return self._failure(claim, ReasonCode.SCOPE_REVOKED, retryable=False)
         except ProviderFailure as error:
-            return self._failure(event_id, ReasonCode.PROVIDER_FAILURE, retryable=error.retryable)
+            return self._failure(claim, ReasonCode.PROVIDER_FAILURE, retryable=error.retryable)
         except Exception:  # noqa: BLE001 -- fail closed without exposing exception contents
             # Never log provider bodies, raw SQL parameters, prompts, event text or keys.
-            return self._failure(event_id, ReasonCode.PROCESSING_FAILURE, retryable=True)
+            return self._failure(claim, ReasonCode.PROCESSING_FAILURE, retryable=True)
 
-    def _failure(self, event_id, reason, *, retryable):
+    def _failure(self, claim: ClaimedEvent, reason, *, retryable):
         with self.sessions.begin() as session:
-            event = session.get(Event, event_id, with_for_update=True)
-            if event.status == "PROCESSING":
-                event.status = "FAILED_RETRYABLE" if retryable else "FAILED_FINAL"
-                event.last_error_code = reason.value
-                event.finished_at = now()
-            result = self._result(session, event_id)
+            event = session.get(Event, claim.event_id, with_for_update=True)
+            database_now = session.scalar(select(func.now()))
+            if self._owns_lease(event, claim, database_now):
+                retry = retryable and claim.attempts < self.queue.max_attempts
+                event.status = "FAILED_RETRYABLE" if retry else "FAILED_FINAL"
+                event.last_error_code = (
+                    reason.value if retry else ("RETRIES_EXHAUSTED" if retryable else reason.value)
+                )
+                event.error_category = self._error_category(reason)
+                event.next_attempt_at = (
+                    self.retry_policy.next_attempt_at(claim.attempts, now=database_now)
+                    if retry
+                    else None
+                )
+                event.finished_at = None if retry else database_now
+                event.lease_token = None
+                event.lease_expires_at = None
+                event.worker_id = None
+            result = self._result(session, claim.event_id)
 
         self._log(result)
         return result
 
-    def _persist(self, event_id, scope, decision):
+    def _persist(self, claim: ClaimedEvent, scope, decision):
+        event_id = claim.event_id
         with self.sessions.begin() as session:
             event = session.get(Event, event_id, with_for_update=True)
-            if event.status != "PROCESSING":
+            database_now = session.scalar(select(func.now()))
+            if not self._owns_lease(event, claim, database_now):
                 return self._result(session, event_id)
 
             reason = decision.reason
@@ -119,6 +140,7 @@ class EventProcessor:
                 record_usage(session, event_id, decision.usage)
                 event.status = "FAILED_FINAL"
                 event.last_error_code = ReasonCode.SCOPE_REVOKED.value
+                event.error_category = "authorization"
             elif draft is not None and reason == ReasonCode.GROUNDED_ANSWER:
                 cited_ids = list(
                     dict.fromkeys(
@@ -159,18 +181,60 @@ class EventProcessor:
                     )
                 )
                 record_usage(session, event_id, decision.usage)
+                create_outbox(
+                    session,
+                    event,
+                    kind="ANSWER_ACK",
+                    body=reply,
+                    citations=[citation.model_dump(mode="json") for citation in citations],
+                )
                 event.status = "ANSWERED"
             else:
                 create_ticket(session, event, reason)
                 record_usage(session, event_id, decision.usage)
+                create_outbox(
+                    session,
+                    event,
+                    kind="HANDOFF_ACK",
+                    body=handoff_acknowledgment(),
+                    citations=[],
+                )
                 event.status = "HANDOFF"
 
-            event.finished_at = now()
+            event.finished_at = database_now
+            event.lease_token = None
+            event.lease_expires_at = None
+            event.worker_id = None
+            event.next_attempt_at = None
             session.flush()
             result = self._result(session, event_id)
 
         self._log(result)
         return result
+
+    @staticmethod
+    def _owns_lease(event: Event | None, claim: ClaimedEvent, database_now: datetime) -> bool:
+        return bool(
+            event
+            and event.status == "PROCESSING"
+            and event.lease_token == claim.lease_token
+            and event.lease_expires_at is not None
+            and event.lease_expires_at > database_now
+        )
+
+    def _current_result(self, event_id: int):
+        with self.sessions() as session:
+            return self._result(session, event_id)
+
+    @staticmethod
+    def _error_category(reason: ReasonCode) -> str:
+        if reason == ReasonCode.PROVIDER_FAILURE:
+            return "provider"
+        if reason == ReasonCode.SCOPE_REVOKED:
+            return "authorization"
+        if reason == ReasonCode.INVALID_EVENT:
+            return "invalid_input"
+        return "processing"
 
     def _result(self, session, event_id):
         event = session.get(Event, event_id)

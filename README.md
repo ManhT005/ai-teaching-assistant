@@ -2,27 +2,29 @@
 
 Lean MVP for a teaching assistant using **FastAPI + PostgreSQL/pgvector + a simulated Zalo webhook**.
 
-> **Status:** Demo ingestion, scoped hybrid retrieval, grounded extractive generation and persisted teacher handoff are implemented. An operator CLI processes stored events with atomic claims, source revalidation, citations and usage audit. FakeLLM runs offline; Gemini is optional. Worker recovery/retries, outbound delivery and real Zalo integration remain future work.
+> **Status:** Demo ingestion, scoped hybrid retrieval, grounded generation, bounded event retries, transactional outbox, mock delivery and operator visibility are implemented. The webhook remains asynchronous: ACK means durable admission. No real Zalo integration or proof of exactly-once network delivery is claimed.
 
 ## Architecture
 
 ```text
-Mock Zalo Webhook --> FastAPI (auth / class mapping / dedup) --> PostgreSQL
-                                                              |
-Reviewed PDF/DOCX/FAQ --> Ingestion --> pgvector + FTS --> Hybrid retrieval
-                                                              |
-                                        Evidence Gate --> LLM --> Answer Validator
-                                                              |
-                                           Operator processor --> Answer / Ticket
+Mock Webhook --> FastAPI (auth / binding / dedup / atomic quotas) --> PostgreSQL queue
+                                                                        |
+                                     Event worker --> Grounded Answer OR Ticket + Outbox
+                                                                        |
+                                         Delivery worker --> idempotent local mock inbox
+
+Reviewed sources --> Ingestion --> pgvector + FTS --> Hybrid retrieval --> Evidence Gate
+                                                                        --> LLM --> Validator
 ```
 
-One FastAPI process, one PostgreSQL service, no Redis, Celery or microservices.
+One FastAPI service, separate event and delivery worker processes, one PostgreSQL
+service; no Redis, Celery or external message broker.
 
 ## Local setup (PowerShell)
 
 Requirements: Python 3.11+; Docker Desktop with Docker Compose.
 
-1. `Copy-Item .env.example .env`. Set `POSTGRES_PASSWORD`, `DATABASE_URL` with the **same password**, and a long, random `MOCK_WEBHOOK_TOKEN`. Never commit `.env`.
+1. `Copy-Item .env.example .env`. Set `POSTGRES_PASSWORD`, `DATABASE_URL` with the **same password**, and separate long, random `MOCK_WEBHOOK_TOKEN` and `OPERATOR_API_TOKEN` values. Never commit `.env`.
 2. `docker compose up -d db` and wait until DB is healthy.
 3. `py -3 -m venv .venv`; ` .\.venv\Scripts\Activate.ps1`; `pip install -r requirements.txt`.
 4. `alembic upgrade head`.
@@ -47,7 +49,29 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/webhook/mock `
   -ContentType "application/json" -Body $body
 ```
 
-Expected: first event `accepted`, replay of the same `(channel,event_id)` `duplicate`. The webhook **only stores the event**; run the operator processor below to generate a decision. Unknown/inactive groups return 403. Client-supplied `class_id` and unexpected fields return 422. In authorized groups, bot messages, messages without the `/hoi` command, and empty questions are ignored. `/hoiday` is not a trigger.
+Expected: first event `accepted`, replay of the same `(channel,event_id)` `duplicate`. The webhook **only stores the event**; two independent workers process it and write a local mock delivery. Unknown/inactive groups return 403. Client-supplied `class_id` and unexpected fields return 422. In authorized groups, bot messages, messages without the `/hoi` command, and empty questions are ignored. `/hoiday` is not a trigger. Atomic fixed-window quotas default to 10 new events per sender and 100 per group per minute; duplicates and ignored events do not consume quota. A new over-limit event gets 429 with `Retry-After` and is rolled back.
+
+Configure different high-entropy values for `MOCK_WEBHOOK_TOKEN` and `OPERATOR_API_TOKEN`. Set bounded event/delivery retry values in `.env.example`. Run each worker in a separate terminal after the API and database are ready:
+
+```powershell
+python -m scripts.run_event_worker --poll-interval 1
+python -m scripts.run_delivery_worker --poll-interval 1
+
+# Periodically prune quota windows older than two configured windows.
+python -m scripts.cleanup_rate_limits
+```
+
+Use `--once --limit 10` for one batch. `scripts.process_pending_events --once` remains available for operator compatibility, but it is not needed for automatic processing. The event worker claims with a renewable-on-reclaim lease and fencing token, then releases its DB connection before generation. Transient errors use bounded exponential backoff; exhausted work becomes `FAILED_FINAL`. The outbox is committed atomically with the Answer or Ticket. Mock delivery records a deterministic idempotency key in PostgreSQL; `SENT` means the mock inbox accepted the record, not that a learner read it. A handoff acknowledgment says only that the request was received.
+
+Operator-only endpoints require `X-Operator-Token` (separate from the webhook credential):
+
+```text
+GET /internal/demo/metrics
+GET /internal/demo/events/{internal_event_id}
+GET /internal/demo/deliveries?limit=20
+```
+
+Metrics are aggregate and preserve unknown cost as `null`. Event inspection omits sender and question. Delivery inspection exposes the mock reply/citations only to the authenticated operator. No endpoint lets a client choose a class.
 
 `received_at` must include a timezone. It is stored as `source_received_at`; the server's intake time remains in `events.received_at`. Existing installations must run `alembic upgrade head` for migration `0002_source_received_at`.
 
@@ -68,7 +92,7 @@ The converter writes JSON only; it never sends requests or emits credentials. Su
 
 The offline check parses 12 items, resolves them to 9 logical sections and reports `handoff / INCOMPLETE_EVIDENCE` for the comparison question. This checks the contract only; it does not run retrieval, create a ticket or answer the question. See [the agreed contracts and acceptance limits](docs/architecture/sample_contracts.md).
 
-CI runs migrations, repeatable seeding and webhook tests against PostgreSQL/pgvector. Locally, PostgreSQL tests require `TEST_DATABASE_URL` pointing to a **dedicated migrated test database**; otherwise those tests are reported as skipped.
+CI runs migrations, repeatable seeding, lint/format checks and PostgreSQL integration tests. Locally, PostgreSQL tests require `TEST_DATABASE_URL` pointing to a **dedicated test database**; otherwise those tests are reported as skipped.
 
 ## Demo knowledge ingestion
 
@@ -181,14 +205,14 @@ and [acceptance report with misses](docs/testing/hybrid-retrieval-acceptance.md)
 
 ## Grounded generation and teacher handoff
 
-Apply migration `0006_grounded_generation` with `python -m alembic upgrade head`.
+Apply migrations through `0007_event_reliability` with `python -m alembic upgrade head`.
 Keep `LLM_PROVIDER=fake` for offline operation. To call Gemini, set
 `LLM_PROVIDER=gemini`, `GEMINI_API_KEY` and `GEMINI_MODEL` in `.env` using
 [.env.example](.env.example). The model `gemini-3.5-flash-lite` was smoke-tested;
 an account-specific model can be configured.
 
 ```powershell
-# Process at most five stored PENDING events; emit audit metadata.
+# Optional compatibility CLI for a direct single-batch operator run.
 python -m scripts.process_pending_events --once --limit 5
 
 # Explicit operator preview, including reply and citation provenance.
@@ -197,9 +221,9 @@ python -m scripts.process_pending_events --once --event-id 123 --preview
 
 The internal event ID is the integer from the `events` table, not the external
 event string. Terminal reruns return the saved decision. `--preview` prints to the
-operator only; it sends no message to Zalo. Provider failures exit nonzero with
-`FAILED_RETRYABLE` or `FAILED_FINAL` and a reason. Only PENDING events are claimed;
-failed or abandoned PROCESSING events are not retried automatically.
+operator only; it sends no message to Zalo. Normal processing runs automatically
+through `scripts.run_event_worker` and `scripts.run_delivery_worker`; due retries
+and expired leases are recovered without per-event CLI calls.
 
 Answers quote 1–3 complete eligible paragraphs. The model selects temporary quote
 IDs; Python composes every claim from the original text and stable chunk identity.
@@ -246,7 +270,10 @@ See the [grounding ADR](docs/architecture/grounded_generation.md) and
 - `app/generation/` — contracts, evidence policy, safety, validation and orchestration
 - `app/llm/` — Vietnamese prompt, deterministic fake and Gemini REST adapter
 - `app/events/` — atomic processing, persisted tickets, usage and safe response text
+- `app/delivery/` — transactional outbox, delivery fencing and idempotent mock inbox adapter
 - `scripts/process_pending_events.py` — operator processing and explicit reply preview
+- `scripts/run_event_worker.py`, `scripts/run_delivery_worker.py` — independent polling workers
+- `app/api/internal_demo.py` — separately authenticated operator metrics and mock inbox
 - `alembic/` — versioned database migration, including pgvector extension
 - `scripts/seed.py` — seed two demo classes and mock group bindings
 - `scripts/convert_sample_events.py`, `scripts/check_sample_materials.py` — local fixture adapter and parser checks
