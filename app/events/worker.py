@@ -9,8 +9,17 @@ class EventWorker:
         self.processor = processor
 
     def run_once(self, *, limit: int = 10, worker_id: str = "event-worker"):
-        claims = self.queue.claim_due(limit=limit, worker_id=worker_id)
-        return [self.processor.process_claim(claim) for claim in claims]
+        if not 1 <= limit <= 100:
+            raise ValueError("Work limit must be between 1 and 100")
+        results = []
+        for _ in range(limit):
+            # Claim just before execution: slow LLM calls must not exhaust the
+            # leases of other events waiting in the same polling pass.
+            claims = self.queue.claim_due(limit=1, worker_id=worker_id)
+            if not claims:
+                break
+            results.append(self.processor.process_claim(claims[0]))
+        return results
 
     def run_forever(
         self,
