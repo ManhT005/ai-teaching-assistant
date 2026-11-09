@@ -244,6 +244,13 @@ class Ticket(Base):
         String(25), nullable=False, default="OPEN", server_default="OPEN"
     )
     resolution: Mapped[str | None] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1", default=1)
+    assigned_teacher_id: Mapped[int | None] = mapped_column(ForeignKey("staff_actors.id"))
+    assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_action_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    closure_reason: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

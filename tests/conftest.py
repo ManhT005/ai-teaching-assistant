@@ -70,6 +70,21 @@ def rag_engine(rag_database_factory):
 
 
 @pytest.fixture
+def staff_system(generation_system, tmp_path):
+    from fastapi.testclient import TestClient
+    from teacher_faq_helpers import build_staff_system
+
+    from app.main import app
+
+    system = build_staff_system(generation_system, tmp_path)
+    try:
+        with TestClient(app) as client:
+            yield client, system
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.fixture
 def authorized_contexts(rag_engine):
     from sqlalchemy.orm import sessionmaker
 

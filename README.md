@@ -20,6 +20,13 @@ Reviewed sources --> Ingestion --> pgvector + FTS --> Hybrid retrieval --> Evide
 One FastAPI service, separate event and delivery worker processes, one PostgreSQL
 service; no Redis, Celery or external message broker.
 
+The internal Teacher & FAQ workflow supports class-scoped staff credentials,
+ticket assignment, explicitly approved human replies through a separate mock
+outbox, and independently reviewed FAQ publication through KnowledgeStore.
+Run migration `0009_teacher_faq_workflow` before using it. See the
+[workflow architecture](docs/architecture/teacher_faq_workflow.md) and
+[local staff demo/runbook](docs/testing/teacher-faq-acceptance.md).
+
 Follow-up interpretation uses at most five same-sender answered turns from the
 same bound group/class within 20 minutes. The history only helps identify a
 topic; answers still require fresh retrieval and exact reviewed-source quotes.

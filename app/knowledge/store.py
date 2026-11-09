@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select, text, update
 
@@ -25,7 +25,7 @@ def _lock(session, logical_key: str) -> None:
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def group_documents(sections: list[KnowledgeChunk]) -> list[list[KnowledgeChunk]]:
@@ -46,7 +46,9 @@ class KnowledgeStore:
         if embeddings.model_id != MODEL_KEY or embeddings.dimension != DIMENSION:
             raise ValueError("Embedding service differs from the fixed index model/dimension")
 
-    def ingest(self, sections: list[KnowledgeChunk], force: bool = False) -> dict:
+    def ingest(
+        self, sections: list[KnowledgeChunk], force: bool = False, *, activation_guard=None
+    ) -> dict:
         sections = [KnowledgeChunk.model_validate(section.model_dump()) for section in sections]
 
         if not sections:
@@ -131,9 +133,12 @@ class KnowledgeStore:
                     offset + len(batch),
                 )
 
-            self._activate(document_id, logical_key, chunks)
+            if activation_guard is None:
+                self._activate(document_id, logical_key, chunks)
+            else:
+                self._activate(document_id, logical_key, chunks, activation_guard=activation_guard)
 
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 -- sanitize external indexing failures
             self._fail(document_id, type(error).__name__)
             # Provider/DB exception messages can contain source content or SQL parameters.
             raise RuntimeError(
@@ -258,7 +263,14 @@ class KnowledgeStore:
                     )
                 )
 
-    def _activate(self, document_id: int, logical_key: str, expected: list[IndexedChunk]):
+    def _activate(
+        self,
+        document_id: int,
+        logical_key: str,
+        expected: list[IndexedChunk],
+        *,
+        activation_guard=None,
+    ):
         with self.sessions.begin() as session:
             _lock(session, logical_key)
             document = session.get(Document, document_id)
@@ -306,6 +318,9 @@ class KnowledgeStore:
             document.index_status = "READY"
             document.indexed_at = _now()
             document.active = True
+            if activation_guard is not None:
+                session.flush()
+                activation_guard(session, document)
 
     def _fail(self, document_id: int, failure_code: str):
         with self.sessions.begin() as session:
@@ -315,12 +330,14 @@ class KnowledgeStore:
                 document.index_status = "FAILED"
                 document.failure_code = failure_code[:80]
 
-    def revoke(self, logical_key: str, reason: str) -> int:
+    def revoke(self, logical_key: str, reason: str, *, revocation_guard=None) -> int:
         if not reason.strip() or len(reason) > 255:
             raise ValueError("Revocation requires a reason of 1 to 255 characters")
 
         with self.sessions.begin() as session:
             _lock(session, logical_key)
+            if revocation_guard is not None:
+                revocation_guard(session)
             result = session.execute(
                 update(Document)
                 .where(Document.logical_key == logical_key)
@@ -333,6 +350,20 @@ class KnowledgeStore:
             )
 
             return result.rowcount
+
+    def confirm_active(self, logical_key: str, document_id: int, activation_guard):
+        """Reconcile an existing version under the same lock order as activation."""
+        with self.sessions.begin() as session:
+            _lock(session, logical_key)
+            document = session.get(Document, document_id, with_for_update=True)
+            if (
+                document is None
+                or document.logical_key != logical_key
+                or not document.active
+                or document.index_status != "READY"
+            ):
+                raise ValueError("Expected active source is unavailable")
+            activation_guard(session, document)
 
     def status(self) -> list[dict]:
         with self.sessions() as session:
