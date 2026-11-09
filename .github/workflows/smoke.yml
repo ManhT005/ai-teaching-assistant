@@ -44,7 +44,7 @@ jobs:
           tests/test_config_secrets.py tests/test_event_delivery_e2e.py tests/test_event_queue.py tests/test_event_retry.py
           tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
           tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
-          tests/test_worker_recovery.py
+          tests/test_worker_recovery.py tests/test_worker_claim_timing.py
       - run: >-
           ruff format --check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
           app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
@@ -55,7 +55,7 @@ jobs:
           tests/test_config_secrets.py tests/test_event_delivery_e2e.py tests/test_event_queue.py tests/test_event_retry.py
           tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
           tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
-          tests/test_worker_recovery.py
+          tests/test_worker_recovery.py tests/test_worker_claim_timing.py
       - run: python -m pytest -q --junitxml=test-results.xml
       - uses: actions/upload-artifact@v4
         if: always()
