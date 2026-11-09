@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 
 from app.config import get_settings
-from app.context.contracts import ResolutionStatus
+from app.context.contracts import ResolutionReason, ResolutionStatus
 from app.context.resolver import ContextResolver
 from app.delivery.outbox import create_outbox
 from app.events.messages import handoff_acknowledgment, insufficient_evidence_message
@@ -91,8 +91,17 @@ class EventProcessor:
                 ResolutionStatus.INVALID,
             }:
                 decision = PipelineDecision(
-                    reason=ReasonCode.AMBIGUOUS_QUESTION,
-                    evidence=EvidenceDecision(ReasonCode.AMBIGUOUS_QUESTION, {}),
+                    reason=(
+                        ReasonCode.UNSAFE_RESPONSE
+                        if resolution.reason == ResolutionReason.UNSAFE_INPUT
+                        else ReasonCode.AMBIGUOUS_QUESTION
+                    ),
+                    evidence=EvidenceDecision(
+                        ReasonCode.UNSAFE_RESPONSE
+                        if resolution.reason == ResolutionReason.UNSAFE_INPUT
+                        else ReasonCode.AMBIGUOUS_QUESTION,
+                        {},
+                    ),
                 )
             else:
                 decision = self.pipeline.run(resolution.standalone_question, scope)

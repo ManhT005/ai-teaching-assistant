@@ -81,9 +81,15 @@ class ContextResolver:
                     TeachingIntent(existing.intent),
                     existing.resolved_query,
                     tuple(existing.prior_event_ids),
-                    ResolutionReason.UNIQUE_RECENT_REFERENT
-                    if existing.resolution_status == "RESOLVED"
-                    else ResolutionReason.NO_ELIGIBLE_HISTORY,
+                    (
+                        ResolutionReason.UNIQUE_RECENT_REFERENT
+                        if existing.resolution_status == "RESOLVED"
+                        else ResolutionReason.UNSAFE_INPUT
+                        if existing.resolved_query == "[redacted sensitive input]"
+                        else ResolutionReason.QUERY_TOO_LONG
+                        if existing.resolution_status == "INVALID"
+                        else ResolutionReason.NO_ELIGIBLE_HISTORY
+                    ),
                     existing.rewriter_revision,
                 )
 
@@ -95,7 +101,9 @@ class ContextResolver:
                     intent,
                     stored_question,
                     (),
-                    ResolutionReason.AMBIGUOUS_REFERENT,
+                    ResolutionReason.UNSAFE_INPUT
+                    if unsafe_input
+                    else ResolutionReason.QUERY_TOO_LONG,
                     REVISION,
                 )
             else:
