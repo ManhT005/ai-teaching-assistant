@@ -234,6 +234,46 @@ def upgrade():
     op.execute(
         "CREATE TRIGGER ticket_actions_append_only BEFORE UPDATE OR DELETE ON ticket_actions FOR EACH ROW EXECUTE FUNCTION reject_workflow_audit_mutation()"
     )
+    op.execute("""
+        CREATE FUNCTION protect_workflow_content() RETURNS trigger AS $$
+        BEGIN
+            IF TG_TABLE_NAME = 'teacher_replies' THEN
+                IF OLD.status <> 'DRAFT' AND
+                   ROW(NEW.body, NEW.body_hash, NEW.revision, NEW.author_actor_id,
+                       NEW.approver_actor_id, NEW.approval_credential_id, NEW.approved_at)
+                   IS DISTINCT FROM
+                   ROW(OLD.body, OLD.body_hash, OLD.revision, OLD.author_actor_id,
+                       OLD.approver_actor_id, OLD.approval_credential_id, OLD.approved_at) THEN
+                    RAISE EXCEPTION 'Approved reply is immutable';
+                END IF;
+            ELSE
+                IF OLD.submitted_at IS NOT NULL AND
+                   ROW(NEW.question, NEW.answer, NEW.topics, NEW.source_references,
+                       NEW.body_hash, NEW.revision, NEW.faq_id, NEW.submitted_at)
+                   IS DISTINCT FROM
+                   ROW(OLD.question, OLD.answer, OLD.topics, OLD.source_references,
+                       OLD.body_hash, OLD.revision, OLD.faq_id, OLD.submitted_at) THEN
+                    RAISE EXCEPTION 'Submitted FAQ is immutable';
+                END IF;
+                IF OLD.decision IS NOT NULL AND
+                   ROW(NEW.decision, NEW.reviewer_actor_id, NEW.reviewer_credential_id,
+                       NEW.reviewed_at, NEW.review_reason)
+                   IS DISTINCT FROM
+                   ROW(OLD.decision, OLD.reviewer_actor_id, OLD.reviewer_credential_id,
+                       OLD.reviewed_at, OLD.review_reason) THEN
+                    RAISE EXCEPTION 'FAQ review is immutable';
+                END IF;
+            END IF;
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql
+    """)
+    op.execute(
+        "CREATE TRIGGER protect_teacher_reply BEFORE UPDATE ON teacher_replies FOR EACH ROW EXECUTE FUNCTION protect_workflow_content()"
+    )
+    op.execute(
+        "CREATE TRIGGER protect_faq_revision BEFORE UPDATE ON faq_revisions FOR EACH ROW EXECUTE FUNCTION protect_workflow_content()"
+    )
 
 
 def downgrade():
@@ -242,6 +282,9 @@ def downgrade():
         "UPDATE documents SET active=false, index_status='REVOKED', revoked_at=now(), revocation_reason='FAQ_WORKFLOW_ROLLBACK' WHERE logical_key IN (SELECT logical_doc_id FROM faq_publications)"
     )
     op.execute("DROP TRIGGER ticket_actions_append_only ON ticket_actions")
+    op.execute("DROP TRIGGER protect_teacher_reply ON teacher_replies")
+    op.execute("DROP TRIGGER protect_faq_revision ON faq_revisions")
+    op.execute("DROP FUNCTION protect_workflow_content()")
     op.execute("DROP FUNCTION reject_workflow_audit_mutation()")
     op.execute("DROP INDEX ix_ticket_staff_queue")
     op.execute(
