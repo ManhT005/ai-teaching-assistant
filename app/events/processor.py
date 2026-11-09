@@ -6,13 +6,16 @@ from datetime import datetime
 from sqlalchemy import func, select
 
 from app.config import get_settings
+from app.context.contracts import ResolutionStatus
+from app.context.resolver import ContextResolver
 from app.delivery.outbox import create_outbox
 from app.events.messages import handoff_acknowledgment, insufficient_evidence_message
 from app.events.queue import ClaimedEvent, EventQueue
 from app.events.retry import RetryPolicy
 from app.events.tickets import create_ticket, record_usage
 from app.generation.contracts import Citation, EventProcessingResult, ReasonCode, Usage
-from app.generation.evidence import sources_current
+from app.generation.evidence import EvidenceDecision, sources_current
+from app.generation.pipeline import PipelineDecision
 from app.generation.validator import validate_composed_answer
 from app.llm.provider import ProviderFailure
 from app.mock_channel import question_from_text
@@ -22,6 +25,7 @@ from app.retrieval.service import (
     normalize_question,
     resolve_authorized_scope,
 )
+from app.teaching.formatter import format_teaching_reply
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +35,12 @@ class EventProcessor:
         self.sessions = sessions
         self.pipeline = pipeline
         settings = get_settings()
+        self.context_resolver = ContextResolver(
+            sessions,
+            ttl_minutes=settings.context_ttl_minutes,
+            max_turns=settings.context_max_turns,
+            max_characters=settings.context_max_characters,
+        )
         self.queue = EventQueue(
             sessions,
             lease_seconds=settings.event_lease_seconds,
@@ -74,8 +84,19 @@ class EventProcessor:
             except ValueError:
                 return self._failure(claim, ReasonCode.INVALID_EVENT, retryable=False)
 
-            decision = self.pipeline.run(question, scope)
-            return self._persist(claim, scope, decision)
+            resolution = self.context_resolver.resolve(event_id, question, scope)
+            if resolution.status in {
+                ResolutionStatus.AMBIGUOUS,
+                ResolutionStatus.NO_CONTEXT,
+                ResolutionStatus.INVALID,
+            }:
+                decision = PipelineDecision(
+                    reason=ReasonCode.AMBIGUOUS_QUESTION,
+                    evidence=EvidenceDecision(ReasonCode.AMBIGUOUS_QUESTION, {}),
+                )
+            else:
+                decision = self.pipeline.run(resolution.standalone_question, scope)
+            return self._persist(claim, scope, decision, teaching_intent=resolution.intent)
 
         except ScopeAuthorizationError:
             return self._failure(claim, ReasonCode.SCOPE_REVOKED, retryable=False)
@@ -110,13 +131,20 @@ class EventProcessor:
         self._log(result)
         return result
 
-    def _persist(self, claim: ClaimedEvent, scope, decision):
+    def _persist(self, claim: ClaimedEvent, scope, decision, *, teaching_intent=None):
         event_id = claim.event_id
         with self.sessions.begin() as session:
             event = session.get(Event, event_id, with_for_update=True)
             database_now = session.scalar(select(func.now()))
             if not self._owns_lease(event, claim, database_now):
                 return self._result(session, event_id)
+
+            if not self.context_resolver.snapshot_is_current(session, event_id, scope):
+                decision = PipelineDecision(
+                    reason=ReasonCode.AMBIGUOUS_QUESTION,
+                    evidence=EvidenceDecision(ReasonCode.AMBIGUOUS_QUESTION, {}),
+                    usage=decision.usage,
+                )
 
             reason = decision.reason
             draft = decision.draft
@@ -166,6 +194,8 @@ class EventProcessor:
                     + " ".join(f"[{numbers[chunk_id]}]" for chunk_id in claim.citation_ids)
                     for index, claim in enumerate(draft.claims, start=1)
                 )
+                if teaching_intent is not None:
+                    reply = format_teaching_reply(teaching_intent, reply)
                 session.add(
                     Answer(
                         event_id=event_id,
