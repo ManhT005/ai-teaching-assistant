@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
+from test_ingestion_db import section
 
 from app.config import get_settings
 from app.db import get_db
@@ -10,6 +11,7 @@ from app.delivery.dispatcher import DeliveryWorker
 from app.delivery.mock_adapter import MockReplyAdapter
 from app.events.processor import EventProcessor
 from app.events.worker import EventWorker
+from app.knowledge.ingestion import ReviewDecision
 from app.main import app
 from app.models import Answer, Event, MockDeliveredMessage, OutboxMessage, Ticket
 
@@ -170,3 +172,149 @@ def test_injection_request_is_handed_off_without_secret_in_mock_message(event_cl
         assert ticket.status == "OPEN"
         assert "API key" not in receipt.body
         assert "e2e-webhook-only" not in receipt.body
+
+
+def test_full_401_question_uses_n8n_curriculum_without_requiring_platform_in_quote(
+    event_client, generation_system
+):
+    client, _, _, processor, delivery_worker = event_client
+    _, _, store, _ = generation_system
+    store.revoke("AUTO", "Replace generic test evidence with the supplied source excerpt")
+    store.ingest(
+        [
+            section(
+                "401 Unauthorized: thường cần kiểm tra thông tin xác thực (API key/token), "
+                "header Authorization hoặc token hết hạn. Không đăng token lên nhóm học viên.",
+                doc_id="DOC-AUTO-01",
+                section_id="AUTO-03",
+                class_scope="AUTO-N8N-01",
+            )
+        ]
+    )
+
+    for question in (
+        "Em chạy n8n bị lỗi 401 Unauthorized thì xử lý thế nào?",
+        "Em bị lỗi HTTP 401 khi gọi API trong n8n, xử lý thế nào?",
+    ):
+        _, response = submit(client, "mock-ai-automation", question)
+        assert response.status_code == 202
+        results, delivery = run_pipeline_and_delivery(processor, delivery_worker)
+        assert delivery == ["SENT"]
+        answer = results[0]
+        assert answer.status == "ANSWERED"
+        assert answer.citations[0].section_id == "AUTO-03"
+        assert "header Authorization" in answer.reply_text
+        assert "Không đăng token lên nhóm học viên" in answer.reply_text
+
+    _, response = submit(client, "mock-ai-automation", "n8n 401 Unauthorized với Kubernetes?")
+    assert response.status_code == 202
+    results, _ = run_pipeline_and_delivery(processor, delivery_worker)
+    assert results[0].status == "HANDOFF"
+
+
+def test_identical_deadline_question_uses_current_class_deadlines(event_client, generation_system):
+    client, sessions, _, processor, delivery_worker = event_client
+    _, _, store, _ = generation_system
+    store.ingest(
+        [
+            section(
+                "Bài tập nộp qua đường dẫn do giảng viên thông báo trong nhóm lớp.",
+                doc_id="DOC-FAQ-01",
+                section_id="COMMON-02",
+                class_scope="COMMON",
+            ),
+            section(
+                "Bài tập sau buổi học cần nộp trước 22:00 Chủ nhật cùng tuần.",
+                doc_id="DOC-FAQ-01",
+                section_id="GS-CLASS-01",
+            ),
+            section(
+                "Bài tập sau buổi học cần nộp trước 22:00 thứ Bảy cùng tuần.",
+                doc_id="DOC-FAQ-01",
+                section_id="AUTO-CLASS-01",
+                class_scope="AUTO-N8N-01",
+            ),
+        ]
+    )
+    expected = {
+        "mock-google-sheets": ("GS-KPI-01", "GS-CLASS-01", "22:00 Chủ nhật", "thứ Bảy"),
+        "mock-ai-automation": ("AUTO-N8N-01", "AUTO-CLASS-01", "22:00 thứ Bảy", "Chủ nhật"),
+    }
+    for group in expected:
+        _, response = submit(client, group, "Bài tập nộp khi nào?")
+        assert response.status_code == 202
+
+    results, delivery = run_pipeline_and_delivery(processor, delivery_worker)
+    assert delivery == ["SENT", "SENT"]
+    assert [result.status for result in results] == ["ANSWERED", "ANSWERED"]
+    with sessions() as session:
+        for result in results:
+            receipt = session.scalar(
+                select(MockDeliveredMessage)
+                .join(OutboxMessage, OutboxMessage.id == MockDeliveredMessage.outbox_id)
+                .where(OutboxMessage.event_id == result.event_id)
+            )
+            scope, section_id, deadline, other_day = expected[receipt.group_id]
+            assert deadline in receipt.body and other_day not in receipt.body
+            assert [(cite.class_scope, cite.section_id) for cite in result.citations] == [
+                (scope, section_id)
+            ]
+
+
+def test_comparison_requires_reviewed_complete_current_source(event_client, generation_system):
+    client, _, _, processor, delivery_worker = event_client
+    _, _, store, _ = generation_system
+    question = "RAG khác Fine-tuning ở điểm nào?"
+    doc_id = "TEST-COMPARISON"
+    comparison = section(
+        f"Q: {question}\nA: RAG truy xuất tài liệu liên quan trong lúc xử lý câu hỏi. "
+        "Fine-tuning tiếp tục huấn luyện để điều chỉnh trọng số mô hình.",
+        doc_id=doc_id,
+        section_id="TEST-RAG-FT",
+        class_scope="AUTO-N8N-01",
+        data_origin="synthetic_demo",
+        review_status="pending",
+    )
+    store.ingest([comparison])
+
+    def ask(text, group="mock-ai-automation"):
+        _, response = submit(client, group, text)
+        assert response.status_code == 202
+        results, delivery = run_pipeline_and_delivery(processor, delivery_worker)
+        assert delivery == ["SENT"]
+        return results[0]
+
+    assert ask(question).status == "HANDOFF"
+
+    review = ReviewDecision(
+        reviewer="test-fixture-reviewer",
+        reviewed_at="2026-11-09T12:00:00+07:00",
+        reason="Isolated synthetic test fixture only",
+    )
+    approved = comparison.model_copy(
+        update={"review_status": "approved_demo", "review_decision": review}
+    )
+    one_sided = section(
+        f"Q: {question}\nA: RAG truy xuất tài liệu liên quan trong lúc xử lý câu hỏi.",
+        doc_id=doc_id,
+        section_id="TEST-RAG-FT",
+        class_scope="AUTO-N8N-01",
+        data_origin="synthetic_demo",
+        review_status="approved_demo",
+        review_decision=review,
+    )
+    store.ingest([one_sided])
+    assert ask(question).status == "HANDOFF"
+
+    store.ingest([approved])
+    for text in (question, "So sánh RAG và fine tuning"):
+        result = ask(text)
+        assert result.status == "ANSWERED"
+        assert "So sánh từ tài liệu" in result.reply_text
+        assert "điều chỉnh trọng số" in result.reply_text
+        assert result.citations[0].section_id == "TEST-RAG-FT"
+    assert ask(question, group="mock-google-sheets").status == "HANDOFF"
+    assert ask("Tại sao RAG khác fine-tuning về chi phí?").status == "HANDOFF"
+
+    store.revoke(doc_id, "Test withdrawal")
+    assert ask(question).status == "HANDOFF"
