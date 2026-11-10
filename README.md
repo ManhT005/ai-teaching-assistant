@@ -242,8 +242,12 @@ IDs; Python composes every claim from the original text and stable chunk identit
 Every substantive question term must still be covered by each eligible paragraph.
 Selections with unknown/repeated IDs, extra model prose or excessive length are
 rejected as a whole. Citation metadata is deduplicated in first-selected order.
-Paraphrasing, comparisons and causal explanations are outside this bounded policy
-and can require handoff. Lexical coverage is not semantic proof. Commercial policy
+Free paraphrasing and unsupported comparisons or causal explanations still
+require handoff. For the narrow RAG–Fine-tuning comparison, an active
+`approved_demo` source must explain both mechanisms in one quotable span. The
+supplied draft remains pending. Class-deadline questions require an explicit
+deadline from the bound class, and conflicting deadlines require handoff.
+Lexical coverage is not semantic proof. Commercial policy
 and missing evidence create an OPEN teacher ticket. Revoked authorization and
 provider errors have separate failure states. An Answer and Ticket cannot coexist
 for the same event. Token counts remain unknown (`null`) when metadata is missing;

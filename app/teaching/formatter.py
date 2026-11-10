@@ -15,6 +15,7 @@ _PRESENTATION_HEADINGS = {
     PresentationIntent.EXPLAIN: "Giải thích từ tài liệu",
     PresentationIntent.HOWTO: "Hướng dẫn từ tài liệu",
     PresentationIntent.TROUBLESHOOT: "Các bước kiểm tra từ tài liệu",
+    PresentationIntent.COMPARE: "So sánh từ tài liệu",
     PresentationIntent.EXAMPLE: "Ví dụ từ tài liệu",
 }
 

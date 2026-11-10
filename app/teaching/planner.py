@@ -4,6 +4,10 @@ import re
 
 from app.generation.contracts import AnswerDraft, ReasonCode
 from app.generation.evidence import EvidenceDecision
+from app.generation.question_evidence import (
+    asks_rag_comparison,
+    requires_comparative_or_causal_evidence,
+)
 from app.generation.safety import folded, is_sensitive_policy
 from app.teaching.contracts import PresentationIntent, TeachingPlan
 from app.teaching.coverage import ClaimCoverage, assess_claim_coverage
@@ -15,7 +19,7 @@ def teaching_intent(question: str) -> PresentationIntent:
     value = folded(question)
     if is_sensitive_policy(question):
         return PresentationIntent.POLICY
-    if re.search(r"so sanh|khac|versus|\bvs\b|compare", value):
+    if asks_rag_comparison(question) or re.search(r"\b(so sanh|khac|versus|vs|compare)\b", value):
         return PresentationIntent.COMPARE
     if _EXAMPLE.search(value):
         return PresentationIntent.EXAMPLE
@@ -48,8 +52,10 @@ def plan_teaching(question: str, draft: AnswerDraft, evidence: EvidenceDecision)
         reason = ReasonCode.UNSUPPORTED_CLAIM
     elif intent == PresentationIntent.POLICY:
         reason = ReasonCode.SENSITIVE_OR_POLICY
-    elif intent == PresentationIntent.COMPARE or re.search(
-        r"tai sao|vi sao|\bwhy\b", folded(question)
+    elif requires_comparative_or_causal_evidence(question) and not (
+        intent == PresentationIntent.COMPARE
+        and asks_rag_comparison(question)
+        and evidence.reviewed_comparison
     ):
         reason = ReasonCode.INCOMPLETE_EVIDENCE
     elif intent == PresentationIntent.EXAMPLE:
