@@ -45,6 +45,29 @@ Requirements: Python 3.11+; Docker Desktop with Docker Compose.
 
 Check `http://127.0.0.1:8000/health`, `/ready` and API docs at `/docs`.
 
+## Local demo admin console
+
+Open `http://127.0.0.1:8000/demo/admin` after starting the local API, loading demo
+materials and starting the event, mock delivery and teacher reply workers. Bind
+the demo server to localhost. The console calls the same authenticated API
+endpoints as Swagger and keeps the existing server-side permission checks.
+
+1. In **Vận hành**, enter the local webhook and operator API tokens, send a
+   question, then refresh the mock inbox after the workers process it. The inbox
+   shows response text, class and citations. Replaying reuses the original event.
+2. In **Ticket giảng viên**, use the class-scoped staff token and load tickets.
+   Claim a ticket, save a reply draft and approve the saved revision. Refresh
+   the ticket after the teacher reply worker sends it to the mock inbox.
+3. In **Duyệt FAQ**, a teacher can propose from a resolved ticket and submit the
+   draft. Keep the FAQ ID, switch to a distinct reviewer token and reopen that
+   ID to review it. Switch to a staff token with the operator grant to publish
+   the approved revision. The operator API token is only for metrics and inbox.
+   See the [staff demo runbook](docs/testing/teacher-faq-acceptance.md) for
+   credential setup and the embedding requirements for publication.
+
+Credentials are entered into masked fields, cleared on reload and sent only as
+headers to the same local server. Use demo data and keep token files off-screen.
+
 ## Mock webhook
 
 The class is determined **only by the verified group binding in the database**, not by a class ID supplied in the payload.
