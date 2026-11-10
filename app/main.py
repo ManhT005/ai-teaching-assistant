@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from app.api.demo_admin import router as demo_admin_router
 from app.api.faq import router as faq_router
 from app.api.health import router as health_router
 from app.api.internal_demo import router as internal_demo_router
@@ -16,6 +17,7 @@ app = FastAPI(
     version="0.1.0",
 )
 app.include_router(health_router)
+app.include_router(demo_admin_router)
 app.include_router(internal_demo_router)
 app.include_router(webhook_router)
 app.include_router(teacher_router)
