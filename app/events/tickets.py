@@ -2,6 +2,7 @@
 
 from sqlalchemy import select
 
+from app import workflow_models  # noqa: F401 -- register staff foreign-key targets for Ticket.
 from app.generation.contracts import ReasonCode, Usage
 from app.models import Event, ModelUsage, Ticket
 
