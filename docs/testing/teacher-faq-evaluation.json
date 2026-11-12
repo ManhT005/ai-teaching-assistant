@@ -1,0 +1,178 @@
+{
+  "evaluation": "teacher-faq-workflow-v1",
+  "branch": "feature/teacher-faq-workflow",
+  "baseline_commit": "d6baaeb2d94f90b43b016e76b5a1136c4a77f9f2",
+  "baseline": {
+    "passed": 345,
+    "skipped": 4
+  },
+  "final_local_suite": {
+    "passed": 379,
+    "failed": 0,
+    "skipped": 4,
+    "duration_seconds": 157.26
+  },
+  "environment": "fresh PostgreSQL 17 / pgvector; actual Alembic migrations; isolated schemas; offline fake model fixtures",
+  "checks": {
+    "upgrade_from_empty": "passed",
+    "populated_upgrade_downgrade": "passed",
+    "seed_twice": "passed",
+    "offline_sample_materials": "passed",
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "relevant_python_files": 27,
+    "human_content_approval": "not_performed",
+    "human_security_review": "pending",
+    "hosted_final_head_ci": "not_run_local_commits_only",
+    "frozen_qrels": "unchanged"
+  },
+  "new_cases": [
+    {
+      "test": "tests.test_faq_workflow.test_reply_and_unapproved_candidate_do_not_enter_index",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_independent_reviewer_and_hash_are_mandatory",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_publish_retrieve_replace_and_revoke_with_exact_scoped_identity",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_failed_indexing_stays_inactive_and_retry_is_controlled",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_artifact_manifest_tampering_and_formula_cells_are_rejected",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_restricted_faq_content_is_blocked[=SUM(A1:A2)]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_restricted_faq_content_is_blocked[Tuition refund is always guaranteed.]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_restricted_faq_content_is_blocked[token=synthetic-secret-value-123456]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_restricted_faq_content_is_blocked[<b>unsafe markup</b>]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_publication_releases_request_auth_connection_during_embedding",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_workflow_downgrade_withdraws_published_faq_and_keeps_event",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_urgent_withdrawal_is_allowed_after_origin_binding_is_disabled",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_audit_is_append_only",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_reviewed_content_is_database_immutable",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_rejected_candidate_never_becomes_active",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_revocation_during_embedding_blocks_atomic_activation[reviewer]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_faq_workflow.test_revocation_during_embedding_blocks_atomic_activation[candidate]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_faq_migrations.test_populated_0008_upgrade_keeps_original_handoff",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_class_scoped_queue_and_forged_actor_rejected",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_staff_credential_authentication[missing]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_staff_credential_authentication[wrong]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_staff_credential_authentication[expired]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_staff_credential_authentication[revoked]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_concurrent_claim_has_one_winner",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_approval_replay_and_separate_receipt_preserve_original_outcome",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_delivery_revalidates_authorization_and_approval[binding]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_delivery_revalidates_authorization_and_approval[credential]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_delivery_revalidates_authorization_and_approval[hash]",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_crash_after_receipt_recovers_without_second_send",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_exhausted_delivery_stays_unresolved",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_stale_and_changed_idempotency_requests_have_no_side_effect",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_close_does_not_claim_resolution_or_send_a_reply",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_assigned_teacher_can_release_unapproved_ticket",
+      "status": "passed"
+    },
+    {
+      "test": "tests.test_teacher_workflow.test_staff_metrics_do_not_include_another_class",
+      "status": "passed"
+    }
+  ],
+  "skipped_tests": [
+    "tests.test_generation_live.test_live_gemini_grounded_and_no_evidence_cases",
+    "tests.test_ingestion_original_sources.test_complete_original_sections_and_technical_content",
+    "tests.test_ingestion_original_sources.test_inventory_excludes_guide_and_event_json",
+    "tests.test_live_embeddings.test_live_e5_vietnamese_vectors_and_exact_tokenizer_budget"
+  ],
+  "notes": [
+    "Test staff approvals are synthetic isolated fixtures, not real human or GOS Academy curriculum approval.",
+    "SENT denotes durable local mock acceptance; it is not a real Zalo read receipt.",
+    "No human teaching-quality score, live provider cost or production SLA is inferred."
+  ]
+}

@@ -1,0 +1,18 @@
+# Only runtime code and reviewed, checked-in demo fixtures enter the build.
+**
+!Dockerfile
+!requirements.txt
+!requirements-docker.lock
+!alembic.ini
+!app/
+!app/**
+!alembic/
+!alembic/**
+!scripts/
+!scripts/**
+!data/
+!data/samples/
+!data/samples/**
+**/__pycache__/
+**/*.pyc
+**/*.pyo

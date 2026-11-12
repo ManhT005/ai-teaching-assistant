@@ -1,0 +1,116 @@
+name: smoke
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: gos_test
+          POSTGRES_USER: gos
+          POSTGRES_PASSWORD: local-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gos -d gos_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://gos:local-ci-only@localhost:5432/gos_test
+      TEST_DATABASE_URL: postgresql+psycopg://gos:local-ci-only@localhost:5432/gos_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install 'torch>=2,<3' --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r requirements.txt
+      - run: pip install 'ruff>=0.11,<1'
+      - run: alembic upgrade head
+      - run: python -m scripts.seed
+      - run: python -m scripts.seed
+      - run: python -m scripts.check_sample_materials
+      - run: >-
+          ruff check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
+          app/db_url.py scripts/container_entrypoint.py scripts/run_maintenance_worker.py
+          scripts/smoke_docker.py tests/test_container_startup.py
+          app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
+          app/events/retry.py app/events/worker.py app/main.py app/models.py
+          alembic/versions/0007_event_reliability_mock_delivery.py
+          scripts/run_event_worker.py scripts/run_delivery_worker.py
+          scripts/cleanup_rate_limits.py
+          tests/test_config_secrets.py tests/test_event_delivery_e2e.py tests/test_event_queue.py tests/test_event_retry.py
+          tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
+          tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
+          tests/test_worker_recovery.py tests/test_worker_claim_timing.py
+      - run: >-
+          ruff format --check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
+          app/db_url.py scripts/container_entrypoint.py scripts/run_maintenance_worker.py
+          scripts/smoke_docker.py tests/test_container_startup.py
+          app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
+          app/events/retry.py app/events/worker.py app/main.py app/models.py
+          alembic/versions/0007_event_reliability_mock_delivery.py
+          scripts/run_event_worker.py scripts/run_delivery_worker.py
+          scripts/cleanup_rate_limits.py
+          tests/test_config_secrets.py tests/test_event_delivery_e2e.py tests/test_event_queue.py tests/test_event_retry.py
+          tests/test_event_reliability_migrations.py tests/test_migrations_rag.py tests/test_operations_metrics.py
+          tests/test_operator_auth.py tests/test_outbox_atomic.py tests/test_webhook_rate_limit.py
+          tests/test_worker_recovery.py tests/test_worker_claim_timing.py
+      - run: >-
+          ruff check app/teacher app/faq app/workflow_models.py app/api/teacher.py app/api/faq.py
+          app/knowledge/store.py alembic/env.py alembic/versions/0009_teacher_faq_workflow.py
+          scripts/seed_teacher_demo.py scripts/run_teacher_reply_worker.py scripts/staff_request.py
+          tests/test_teacher_workflow.py tests/test_faq_workflow.py tests/test_teacher_faq_migrations.py
+          tests/teacher_faq_helpers.py tests/conftest.py
+      - run: >-
+          ruff format --check app/teacher app/faq app/workflow_models.py app/api/teacher.py app/api/faq.py
+          app/knowledge/store.py alembic/env.py alembic/versions/0009_teacher_faq_workflow.py
+          scripts/seed_teacher_demo.py scripts/run_teacher_reply_worker.py scripts/staff_request.py
+          tests/test_teacher_workflow.py tests/test_faq_workflow.py tests/test_teacher_faq_migrations.py
+          tests/teacher_faq_helpers.py tests/conftest.py
+      - run: python -m pytest -q --junitxml=test-results.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postgres-17-test-results
+          path: test-results.xml
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare isolated fake-provider configuration
+        run: |
+          python3 - <<'PY'
+          import re
+          import secrets
+          from pathlib import Path
+          content = Path('.env.example').read_text()
+          for key in ('POSTGRES_PASSWORD', 'MOCK_WEBHOOK_TOKEN', 'OPERATOR_API_TOKEN'):
+              content = re.sub(rf'(?m)^{key}=.*$', key + '=' + secrets.token_hex(32), content)
+          Path('.env').write_text(content)
+          PY
+      - name: Build application with bundled CPU model
+        run: docker compose build api
+      - name: Start all services from an empty database
+        run: docker compose up -d --no-build --wait --wait-timeout 180
+      - name: Verify answers, citations, handoff, deduplication and mock delivery
+        run: docker compose exec -T api python -m scripts.smoke_docker
+      - name: Restart services and verify persistent data and recovery
+        run: |
+          docker compose down
+          docker compose up -d --no-build --wait --wait-timeout 180
+          docker compose exec -T api python -m scripts.smoke_docker
+      - name: Container diagnostics
+        if: always()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail 100
+      - name: Stop containers
+        if: always()
+        run: docker compose down
+

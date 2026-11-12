@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GOS Academy · Trang quản trị demo</title>
+  <link rel="stylesheet" href="/demo/admin/style.css">
+  <script src="/demo/admin/console.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="shell top-inner">
+      <div class="brand"><span class="logo" aria-hidden="true">G</span> GOS Academy</div>
+      <span class="tag"><span aria-hidden="true" class="dot"></span> ZALO MOCK DEMO</span>
+    </div>
+  </header>
+  <main class="shell">
+    <div class="intro">
+      <p class="eyebrow">BÀN ĐIỀU PHỐI</p>
+      <h1>Trang quản trị demo</h1>
+      <p>Theo dõi hỏi đáp, chuyển giảng viên và duyệt học liệu FAQ.</p>
+    </div>
+
+    <details class="card credentials" id="credentials" open>
+      <summary>Kết nối môi trường local</summary>
+      <p class="hint">Dán token tương ứng với tác vụ. Các ô được che và sẽ trống khi tải lại trang.</p>
+      <div class="credential-grid">
+        <label>Webhook token <input type="password" id="webhook-token" autocomplete="off"></label>
+        <label>Operator API token <input type="password" id="operator-token" autocomplete="off"></label>
+        <label>Staff token <input type="password" id="staff-token" autocomplete="off"></label>
+      </div>
+    </details>
+
+    <nav class="tabs" aria-label="Màn hình demo">
+      <button type="button" data-view="overview" aria-pressed="true">Vận hành</button>
+      <button type="button" data-view="teacher" aria-pressed="false">Ticket giảng viên</button>
+      <button type="button" data-view="faq" aria-pressed="false">Duyệt FAQ</button>
+    </nav>
+    <p id="notice" class="notice" role="status" aria-live="polite">Chọn tác vụ để bắt đầu.</p>
+
+    <section id="overview" aria-label="Vận hành">
+      <div class="metric-grid">
+        <article class="metric card"><span>AI đã trả lời</span><strong id="answered">—</strong></article>
+        <article class="metric card"><span>Đã chuyển giảng viên</span><strong id="handoffs">—</strong></article>
+        <article class="metric card"><span>Phản hồi trong mock inbox</span><strong id="delivered">—</strong></article>
+        <article class="metric card"><span>Độ trễ P95</span><strong id="latency">—</strong></article>
+      </div>
+      <div class="grid">
+        <section class="card panel">
+          <p class="eyebrow">01 · WEBHOOK</p>
+          <h2>Gửi tin nhắn mẫu</h2>
+          <label>Nhóm học viên
+            <select id="group">
+              <option value="mock-ai-automation">AI Automation · n8n</option>
+              <option value="mock-google-sheets">Google Sheets · KPI</option>
+            </select>
+          </label>
+          <label>Câu hỏi
+            <textarea id="question" maxlength="1000" rows="4" placeholder="Nhập câu hỏi. /hoi được thêm tự động."></textarea>
+          </label>
+          <div class="actions presets" aria-label="Câu hỏi mẫu">
+            <button type="button" data-preset="n8n">Lỗi 401</button>
+            <button type="button" data-preset="deadline">Hạn nộp</button>
+            <button type="button" data-preset="handoff">Chuyển giảng viên</button>
+          </div>
+          <div class="actions">
+            <button class="primary" type="button" id="send">Gửi câu hỏi</button>
+            <button type="button" id="replay" disabled>Gửi lại cùng event</button>
+          </div>
+          <output id="ack" class="callout">Chưa gửi sự kiện.</output>
+        </section>
+        <section class="card panel">
+          <div class="panel-head">
+            <div><p class="eyebrow">02 · MOCK INBOX</p><h2>Phản hồi gần đây</h2></div>
+            <button type="button" id="refresh-ops">Làm mới</button>
+          </div>
+          <p class="hint">Làm mới sau khi các worker xử lý xong. Inbox hiển thị dữ liệu của operator.</p>
+          <div id="inbox" class="stack"><p class="empty">Nhập operator token rồi làm mới.</p></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="teacher" aria-label="Ticket giảng viên" hidden>
+      <div class="grid">
+        <section class="card panel">
+          <div class="panel-head">
+            <div><p class="eyebrow">03 · HANDOFF</p><h2>Hàng đợi ticket</h2></div>
+            <button type="button" id="refresh-tickets">Tải ticket</button>
+          </div>
+          <label>Trạng thái
+            <select id="ticket-filter">
+              <option value="">Tất cả</option><option>OPEN</option><option>ASSIGNED</option>
+              <option>IN_REVIEW</option><option>REPLY_QUEUED</option><option>RESOLVED</option>
+            </select>
+          </label>
+          <div id="tickets" class="stack"><p class="empty">Nhập staff token rồi tải danh sách.</p></div>
+          <button type="button" id="next-tickets" hidden>Trang tiếp</button>
+        </section>
+        <section class="card panel">
+          <div class="panel-head">
+            <div><p class="eyebrow">04 · PHẢN HỒI</p><h2 id="ticket-title">Chi tiết ticket</h2></div>
+            <button type="button" id="refresh-ticket" hidden>Làm mới</button>
+          </div>
+          <p id="ticket-summary" class="empty">Chọn một ticket từ hàng đợi.</p>
+          <div id="ticket-controls" hidden>
+            <div class="actions"><button type="button" id="claim">Nhận ticket</button></div>
+            <label>Phản hồi của giảng viên <textarea id="reply" maxlength="4000" rows="5"></textarea></label>
+            <div class="actions">
+              <button type="button" id="draft">Lưu nháp</button>
+              <button class="primary" type="button" id="approve">Duyệt &amp; đưa vào hàng đợi</button>
+            </div>
+            <p id="reply-delivery" class="hint"></p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="faq" aria-label="Duyệt FAQ" hidden>
+      <div class="grid">
+        <section class="card panel">
+          <p class="eyebrow">05 · TẠO ĐỀ XUẤT</p>
+          <h2>Tạo FAQ từ ticket</h2>
+          <p id="faq-ticket" class="hint">Chọn ticket đã RESOLVED ở tab giảng viên.</p>
+          <label>Câu hỏi <input id="faq-question" maxlength="700"></label>
+          <label>Câu trả lời <textarea id="faq-answer" rows="5" maxlength="4000"></textarea></label>
+          <div class="actions"><button class="primary" type="button" id="create-faq">Tạo nháp FAQ</button></div>
+        </section>
+        <section class="card panel">
+          <p class="eyebrow">06 · KIỂM DUYỆT</p>
+          <h2>Hồ sơ FAQ</h2>
+          <p class="hint">Tác giả gửi duyệt, reviewer độc lập đánh giá, operator xuất bản. Đổi staff token rồi tải lại theo ID.</p>
+          <div class="actions lookup">
+            <label>FAQ ID <input type="number" id="faq-id" min="1" step="1"></label>
+            <button type="button" id="load-faq">Mở hồ sơ</button>
+          </div>
+          <p class="empty" id="faq-summary">Chưa mở hồ sơ FAQ.</p>
+          <div id="faq-controls" hidden>
+            <p class="message" id="faq-content"></p>
+            <label id="review-field">Lý do duyệt <input id="review-reason" maxlength="500"></label>
+            <div class="actions">
+              <button type="button" id="submit-faq">Gửi duyệt</button>
+              <button type="button" id="reject-faq">Từ chối</button>
+              <button type="button" id="review-faq">Duyệt FAQ</button>
+              <button class="primary" type="button" id="publish-faq">Xuất bản</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+    <footer>GOS Academy · Dữ liệu demo · Phản hồi được gửi vào hộp thư mô phỏng.</footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,161 @@
+{
+  "server": "17.11 (Debian 17.11-1.pgdg12+2)",
+  "pgvector": "0.8.7",
+  "model": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "inspection": {
+    "sections": 26,
+    "chunks": 27,
+    "chunks_by_scope": {
+      "GS-KPI-01": 11,
+      "AUTO-N8N-01": 12,
+      "COMMON": 4
+    },
+    "max_input_tokens": 314
+  },
+  "first": [
+    {
+      "doc_id": "DOC-GS-01",
+      "document_id": 3,
+      "version": 1,
+      "status": "ready",
+      "chunks": 9,
+      "checksum": "59fd19dd401a2ad65960f536016420106edd96f239b28d06833d31a94292590e"
+    },
+    {
+      "doc_id": "DOC-AUTO-01",
+      "document_id": 4,
+      "version": 1,
+      "status": "ready",
+      "chunks": 10,
+      "checksum": "8a8078ad32825192b5f8f4b3478ca870394ce67a20409798b4e22ad1b1f42bcc"
+    },
+    {
+      "doc_id": "DOC-FAQ-01",
+      "document_id": 5,
+      "version": 1,
+      "status": "ready",
+      "chunks": 8,
+      "checksum": "88b92d7c1c9b95946abcdd6e3dd21065d9962b7d0a392689a86e2b61da0928d7"
+    }
+  ],
+  "repeat": [
+    {
+      "doc_id": "DOC-GS-01",
+      "document_id": 3,
+      "version": 1,
+      "status": "skipped",
+      "chunks": 9
+    },
+    {
+      "doc_id": "DOC-AUTO-01",
+      "document_id": 4,
+      "version": 1,
+      "status": "skipped",
+      "chunks": 10
+    },
+    {
+      "doc_id": "DOC-FAQ-01",
+      "document_id": 5,
+      "version": 1,
+      "status": "skipped",
+      "chunks": 8
+    }
+  ],
+  "vector_count": 27,
+  "auto": [
+    {
+      "doc_id": "DOC-AUTO-01",
+      "section_id": "AUTO-09",
+      "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "locator": "block 30; block 31",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "AUTO-N8N-01",
+      "distance": 0.12400400638580322
+    },
+    {
+      "doc_id": "DOC-AUTO-01",
+      "section_id": "AUTO-03",
+      "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "locator": "block 9; block 10; block 11; block 12; block 13",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "AUTO-N8N-01",
+      "distance": 0.13522982597351074
+    },
+    {
+      "doc_id": "DOC-AUTO-01",
+      "section_id": "AUTO-10",
+      "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "locator": "block 32; block 33",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "AUTO-N8N-01",
+      "distance": 0.13840561280216945
+    }
+  ],
+  "gs": [
+    {
+      "doc_id": "DOC-GS-01",
+      "section_id": "GS-04",
+      "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+      "locator": "block 22; block 23; block 24",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "GS-KPI-01",
+      "distance": 0.10976665557821497
+    },
+    {
+      "doc_id": "DOC-FAQ-01",
+      "section_id": "GS-CLASS-02",
+      "source_name": "03_FAQ_Quy_dinh_lop_hoc_GIA_LAP.docx",
+      "locator": "block 16; block 17 / table 1 / row 1; block 17 / table 1 / row 2; block 17 / table 1 / row 3; block 17 / table 1 / row 4; block 17 / table 1 / row 5",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "GS-KPI-01",
+      "distance": 0.14085011834799388
+    },
+    {
+      "doc_id": "DOC-GS-01",
+      "section_id": "GS-05",
+      "source_name": "01_Giao_trinh_Google_Sheets_KPI_Dashboard.docx",
+      "locator": "block 25; block 26",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "GS-KPI-01",
+      "distance": 0.1869917289028491
+    }
+  ],
+  "opposite_class": [
+    {
+      "doc_id": "DOC-AUTO-01",
+      "section_id": "AUTO-05",
+      "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "locator": "block 16; block 17; block 18",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "AUTO-N8N-01",
+      "distance": 0.17676894803232113
+    },
+    {
+      "doc_id": "DOC-AUTO-01",
+      "section_id": "AUTO-06",
+      "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "locator": "block 19; block 20",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "AUTO-N8N-01",
+      "distance": 0.18328003983020402
+    },
+    {
+      "doc_id": "DOC-AUTO-01",
+      "section_id": "AUTO-07",
+      "source_name": "02_Giao_trinh_AI_Automation_n8n.docx",
+      "locator": "block 21; block 22",
+      "version": 1,
+      "external_version": "TEST-1.0",
+      "class_scope": "AUTO-N8N-01",
+      "distance": 0.18447499367743625
+    }
+  ]
+}
