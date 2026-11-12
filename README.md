@@ -32,7 +32,120 @@ same bound group/class within 20 minutes. The history only helps identify a
 topic; answers still require fresh retrieval and exact reviewed-source quotes.
 See `CONTEXT_*` limits in `.env.example`. Free semantic paraphrasing is disabled.
 
-## Local setup (PowerShell)
+## Run everything with Docker (recommended for another machine)
+
+The stack includes PostgreSQL/pgvector, the API/admin console, event worker,
+mock delivery worker, teacher reply worker and periodic quota cleanup. A one-shot
+bootstrap verifies the bundled E5 CPU model, applies migrations, seeds class
+bindings and indexes missing demo documents. Existing ready/revoked document
+history is preserved on restart; interrupted initial imports can be retried.
+Staff permissions and content approvals remain explicit operator actions.
+
+The receiving machine needs Docker Engine/Desktop with Compose v2 and Linux
+containers. Python, PostgreSQL and a GPU are not required on the host. The first
+build needs internet for images, Python packages and the pinned E5 model. The
+resulting application image contains the model and can run with `LLM_PROVIDER=fake`
+without contacting a model provider. Gemini requires network access and an API key.
+
+From the repository root in PowerShell:
+
+```powershell
+# Creates .env with three independent random secrets; refuses to overwrite one.
+.\scripts\setup-docker.ps1
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 180
+docker compose ps -a
+```
+
+On Linux/macOS, copy `.env.example` to `.env`, set `POSTGRES_PASSWORD` and two
+different random API tokens of at least 32 characters, then run the same Compose
+commands. `openssl rand -hex 32` can generate each value. If `.env` already exists,
+merge the new settings manually and keep each key only once. Container connections
+are derived from `POSTGRES_*`; the host-only `DATABASE_URL` is ignored in Docker.
+
+Open [the console](http://127.0.0.1:8000/demo/admin),
+[API docs](http://127.0.0.1:8000/docs) and
+[readiness](http://127.0.0.1:8000/ready). Enter the webhook/operator values from the
+local `.env` into the console. Bootstrap should show `Exited (0)`; API should be
+healthy and all four background services should be running. To verify actual
+event processing, citations, handoff, deduplication and mock delivery:
+
+```powershell
+# Writes simulated events/tickets into this instance; requires the default demo corpus + fake LLM.
+docker compose exec api python -m scripts.smoke_docker
+docker compose logs --tail 100 bootstrap api event-worker delivery-worker teacher-reply-worker
+```
+
+If ports are occupied, change `API_PORT` and `POSTGRES_PORT` in `.env`; PostgreSQL
+inside Docker remains on `db:5432`. API and DB ports bind to localhost by default.
+For access from another computer, explicitly set `API_BIND_HOST` and configure
+the server's HTTPS/authentication/network boundary before exposing demo endpoints.
+
+The bundled corpus is the checked-in simulated DOCX/XLSX subset, not all ignored
+original files in `data/raw/`. To use the full supplied corpus, copy its original
+files and checksum-reviewed `manifest.local.json` into `data/raw/` and set
+`KNOWLEDGE_MANIFEST=/app/data/raw/manifest.local.json` **before the first start**.
+For an existing database, explicitly ingest the selected manifest:
+
+```powershell
+docker compose exec api python -m scripts.ingest_knowledge ingest --manifest /app/data/raw/manifest.local.json
+docker compose exec api python -m scripts.ingest_knowledge status
+```
+
+The raw directory is mounted read-only. To create a manifest, use the existing
+`scripts.inspect_sources` CLI with a writable operator-only mount; runtime
+containers cannot modify original files. Teacher/FAQ demo credentials are issued
+inside Docker and kept in the persistent `staff_credentials` volume:
+
+```powershell
+docker compose exec api python -m scripts.seed_teacher_demo --alias teacher-a --class-code AUTO-N8N-01 --role TEACHER
+docker compose exec api python -m scripts.seed_teacher_demo --alias reviewer-b --class-code AUTO-N8N-01 --role FAQ_REVIEWER
+docker compose exec api python -m scripts.seed_teacher_demo --alias operator-c --class-code AUTO-N8N-01 --role OPERATOR
+# Copy an issued file privately using the exact path printed by the command:
+# docker compose cp api:/app/.local/staff-credentials/<issued-file>.token .local/
+```
+
+These staff credentials differ from `OPERATOR_API_TOKEN`. Follow the
+[teacher/FAQ runbook](docs/testing/teacher-faq-acceptance.md) for manual review.
+`postgres_data`, `generated_data` and `staff_credentials` are named volumes and
+survive container recreation and `docker compose down`. Back them up when moving
+existing records; copying images alone starts a fresh instance. Avoid `down -v`
+on an instance whose data you need. Automatic restart requires Docker to be running.
+
+```powershell
+# Stop/start without removing persistent data.
+docker compose down
+docker compose up -d --wait --wait-timeout 180
+# After code changes, rebuild and recreate containers.
+docker compose up -d --build --wait --wait-timeout 180
+# After .env changes, use up -d; restart alone does not reload container settings.
+```
+
+For offline handover to another machine of the same architecture, build once and
+export both images. Transfer the archive, repository runtime files, and the
+reviewed raw corpus if required. Create fresh secrets on the receiving machine:
+
+```powershell
+docker image save -o gos-assistant-images.tar gos-academy-assistant:local pgvector/pgvector:pg17
+# On the receiving machine:
+docker image load -i gos-assistant-images.tar
+.\scripts\setup-docker.ps1
+docker compose up -d --no-build --pull never --wait --wait-timeout 180
+```
+
+Alternatively, after building the images, run `.\scripts\package-docker.ps1` to
+create a ready-to-transfer `.local/docker-handover/` folder containing both
+images, their SHA-256 checksum, Compose, the env template and setup instructions.
+It excludes `.env`, existing database records, staff keys and original raw files.
+
+For a bootstrap failure, inspect its logs and verify secrets, manifest checksums,
+DB credentials and image/model availability, then rerun `docker compose up -d`.
+Changing `POSTGRES_PASSWORD` does not change credentials already initialized in a
+database volume; coordinate a DB password change instead of deleting the volume.
+Delivery still uses the local mock inbox; real Zalo integration remains outside
+this package.
+
+## Local setup with host Python (PowerShell)
 
 Requirements: Python 3.11+; Docker Desktop with Docker Compose.
 

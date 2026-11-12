@@ -32,7 +32,9 @@ def main(argv=None, *, worker=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--once", action="store_true", help="Process one batch and exit")
     parser.add_argument("--limit", type=int, choices=range(1, 101), default=10)
-    parser.add_argument("--poll-interval", type=float, default=1.0)
+    parser.add_argument(
+        "--poll-interval", type=float, default=get_settings().event_poll_interval_seconds
+    )
     parser.add_argument("--worker-id", default="event-worker")
     args = parser.parse_args(argv)
     if args.poll_interval <= 0 or args.poll_interval > 60:

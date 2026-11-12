@@ -36,6 +36,8 @@ jobs:
       - run: python -m scripts.check_sample_materials
       - run: >-
           ruff check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
+          app/db_url.py scripts/container_entrypoint.py scripts/run_maintenance_worker.py
+          scripts/smoke_docker.py tests/test_container_startup.py
           app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
           app/events/retry.py app/events/worker.py app/main.py app/models.py
           alembic/versions/0007_event_reliability_mock_delivery.py
@@ -47,6 +49,8 @@ jobs:
           tests/test_worker_recovery.py tests/test_worker_claim_timing.py
       - run: >-
           ruff format --check app/api/admission.py app/api/internal_demo.py app/api/webhook.py app/config.py
+          app/db_url.py scripts/container_entrypoint.py scripts/run_maintenance_worker.py
+          scripts/smoke_docker.py tests/test_container_startup.py
           app/delivery app/events/processor.py app/events/queue.py app/events/rate_limit.py
           app/events/retry.py app/events/worker.py app/main.py app/models.py
           alembic/versions/0007_event_reliability_mock_delivery.py
@@ -74,4 +78,39 @@ jobs:
         with:
           name: postgres-17-test-results
           path: test-results.xml
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare isolated fake-provider configuration
+        run: |
+          python3 - <<'PY'
+          import re
+          import secrets
+          from pathlib import Path
+          content = Path('.env.example').read_text()
+          for key in ('POSTGRES_PASSWORD', 'MOCK_WEBHOOK_TOKEN', 'OPERATOR_API_TOKEN'):
+              content = re.sub(rf'(?m)^{key}=.*$', key + '=' + secrets.token_hex(32), content)
+          Path('.env').write_text(content)
+          PY
+      - name: Build application with bundled CPU model
+        run: docker compose build api
+      - name: Start all services from an empty database
+        run: docker compose up -d --no-build --wait --wait-timeout 180
+      - name: Verify answers, citations, handoff, deduplication and mock delivery
+        run: docker compose exec -T api python -m scripts.smoke_docker
+      - name: Restart services and verify persistent data and recovery
+        run: |
+          docker compose down
+          docker compose up -d --no-build --wait --wait-timeout 180
+          docker compose exec -T api python -m scripts.smoke_docker
+      - name: Container diagnostics
+        if: always()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail 100
+      - name: Stop containers
+        if: always()
+        run: docker compose down
 

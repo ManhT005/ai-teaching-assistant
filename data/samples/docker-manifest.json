@@ -1,0 +1,148 @@
+{
+  "notice": "Học liệu giả lập phục vụ kiểm thử. Không phải giáo trình hoặc chính sách GOS Academy đang áp dụng.",
+  "sources": [
+    {
+      "path": "derived/automation_excerpt.docx",
+      "sha256": "f6b69ed0442a3b5c52ee34050c00290140aae7f2a20ca3e527270d04393346ac",
+      "metadata": {
+        "doc_id": "DOC-AUTO-01",
+        "version": "TEST-1.0",
+        "data_origin": "provided_sample",
+        "review_status": "provided_sample",
+        "sections": {
+          "AUTO-03": {
+            "class_scope": "AUTO-N8N-01",
+            "topics": [
+              "http_401"
+            ]
+          },
+          "AUTO-05": {
+            "class_scope": "AUTO-N8N-01",
+            "topics": [
+              "rag",
+              "ai_agent"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "path": "derived/knowledge_demo.xlsx",
+      "sha256": "3ea1d95b1249ec43c28108c2e6f05ed9c309ef70b7f69b0d54296e210d0f0ef2",
+      "faq_records": {
+        "FAQ-GS-001": {
+          "doc_id": "DOC-GS-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "GS-04": {
+              "class_scope": "GS-KPI-01",
+              "topics": [
+                "importrange"
+              ]
+            }
+          }
+        },
+        "FAQ-GS-002": {
+          "doc_id": "DOC-GS-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "GS-02": {
+              "class_scope": "GS-KPI-01",
+              "topics": [
+                "sumifs"
+              ]
+            }
+          }
+        },
+        "FAQ-GS-003": {
+          "doc_id": "DOC-FAQ-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "GS-CLASS-01": {
+              "class_scope": "GS-KPI-01",
+              "topics": [
+                "class_schedule"
+              ]
+            }
+          }
+        },
+        "FAQ-AUTO-001": {
+          "doc_id": "DOC-FAQ-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "AUTO-CLASS-01": {
+              "class_scope": "AUTO-N8N-01",
+              "topics": [
+                "class_schedule"
+              ]
+            }
+          }
+        },
+        "FAQ-COMMON-001": {
+          "doc_id": "DOC-FAQ-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "COMMON-02": {
+              "class_scope": "COMMON",
+              "topics": [
+                "support_safety"
+              ]
+            }
+          }
+        },
+        "FAQ-COMMON-002": {
+          "doc_id": "DOC-FAQ-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "COMMON-03": {
+              "class_scope": "COMMON",
+              "topics": [
+                "commercial_handoff"
+              ]
+            }
+          }
+        },
+        "FAQ-AUTO-002": {
+          "doc_id": "DOC-AUTO-01",
+          "version": "TEST-1.0",
+          "data_origin": "provided_sample",
+          "review_status": "provided_sample",
+          "sections": {
+            "AUTO-03": {
+              "class_scope": "AUTO-N8N-01",
+              "topics": [
+                "http_401"
+              ]
+            }
+          }
+        },
+        "DEMO-AUTO-003": {
+          "doc_id": "DEMO-FAQ-AUTO-01",
+          "version": "DEMO-DRAFT-1",
+          "data_origin": "synthetic_demo",
+          "review_status": "pending",
+          "sections": {
+            "DEMO-AUTO-003": {
+              "class_scope": "AUTO-N8N-01",
+              "topics": [
+                "rag_vs_finetuning"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
