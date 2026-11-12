@@ -1,5 +1,6 @@
 """Environment-based configuration. No credentials in source control."""
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -7,10 +8,12 @@ from typing import Literal
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.db_url import configure_database
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-    database_url: str | None = None
+    database_url: str | None = Field(default=None, repr=False)
     mock_webhook_token: SecretStr | None = None
     operator_api_token: SecretStr | None = None
     event_max_attempts: int = Field(default=3, ge=1, le=10)
@@ -49,4 +52,7 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    # docker compose exec starts a new process and bypasses the image entrypoint.
+    if os.environ.get("POSTGRES_HOST"):
+        configure_database(os.environ)
     return Settings()
