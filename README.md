@@ -4,7 +4,7 @@ Trợ giảng AI sử dụng **Retrieval-Augmented Generation (RAG)** để tra 
 
 Dự án cung cấp API FastAPI, trang quản trị demo và Docker Compose chạy đầy đủ các tiến trình. PostgreSQL đảm nhiệm lưu trữ, tìm kiếm vector, tìm kiếm từ khóa và hàng đợi; hệ thống không cần Redis hay Celery.
 
-> **Phạm vi hiện tại:** MVP với học liệu giả lập, webhook mô phỏng Zalo và hộp thư nhận tin cục bộ. `accepted` nghĩa là sự kiện đã được lưu; `SENT` nghĩa là hộp thư mock đã nhận. Tích hợp Zalo thật và vận hành production cần được triển khai, đánh giá riêng.
+> **Phạm vi dự án:** MVP với học liệu giả lập, webhook mô phỏng Zalo và hộp thư nhận tin cục bộ. `accepted` nghĩa là sự kiện đã được lưu; `SENT` nghĩa là hộp thư mock đã nhận. Tích hợp Zalo thật và vận hành production cần được triển khai, đánh giá riêng.
 
 ## Mục lục
 
@@ -110,21 +110,14 @@ docker compose version
 
 Docker daemon phải đang chạy. Lần build đầu cần Internet để tải base image, dependency CPU và model E5. Máy host không cần Python, PostgreSQL hoặc GPU. Bản image đã kiểm tra chạy Linux/amd64; gói image offline cần dùng cùng kiến trúc CPU với máy tạo gói.
 
-### 2. Clone và chọn phiên bản
+### 2. Clone mã nguồn
 
 ```console
-git clone https://github.com/ManhT005/ai-teaching-assistant.git
+git clone --branch main https://github.com/ManhT005/ai-teaching-assistant.git
 cd ai-teaching-assistant
 ```
 
-Dùng nhánh/tag được maintainer bàn giao và kiểm tra có `Dockerfile`, `compose.yaml`, `.env.example`. Nếu bản Docker được bàn giao qua nhánh `feat/docker-full-stack`, chuyển sang nhánh đó **sau khi nhánh đã được công bố trên remote**:
-
-```console
-git fetch origin
-git switch feat/docker-full-stack
-```
-
-Nếu repository yêu cầu quyền truy cập, xác thực GitHub bằng tài khoản có quyền trước khi clone. Tất cả lệnh bên dưới chạy từ thư mục gốc repository.
+Hướng dẫn cài đặt sử dụng nhánh phát hành `main`. Nếu repository yêu cầu quyền truy cập, xác thực GitHub bằng tài khoản có quyền trước khi clone. Tất cả lệnh bên dưới chạy từ thư mục gốc `ai-teaching-assistant`, nơi chứa `Dockerfile`, `compose.yaml` và `.env.example`.
 
 ### 3. Tạo cấu hình
 
@@ -388,7 +381,7 @@ Khi sao lưu instance đang sử dụng, cần giữ cả PostgreSQL lẫn artif
 
 ### Máy nhận có Internet
 
-Clone đúng nhánh/tag được bàn giao, tạo `.env` riêng và làm theo [hướng dẫn Docker](#cai-dat). Lần build đầu sẽ tải dependency/model. Cần chuyển thêm bộ học liệu gốc nếu muốn dùng corpus đầy đủ.
+Clone nhánh `main`, tạo `.env` riêng và làm theo [hướng dẫn Docker](#cai-dat). Lần build đầu sẽ tải dependency/model. Cần chuyển thêm bộ học liệu gốc nếu muốn dùng corpus đầy đủ.
 
 ### Bàn giao bằng image, không build trên máy nhận
 
@@ -416,6 +409,8 @@ Chế độ `fake` chạy với model E5 và fixture đã có trong image, khôn
 
 <a id="phat-trien"></a>
 ## Phát triển bằng Python trên máy host
+
+Dự án sử dụng `develop` để tích hợp thay đổi và `main` cho bản phát hành. Thay đổi từ nhánh làm việc được kiểm tra, merge vào `develop`, sau đó merge vào `main` khi hoàn tất các kiểm tra phát hành.
 
 Dùng cách này khi cần debug/reload mã Python. Cần Python 3.11 và Docker cho PostgreSQL. Không chạy đồng thời API/worker Docker và API/worker host trên cùng cổng hoặc database nếu không chủ đích chia sẻ công việc.
 
@@ -492,7 +487,7 @@ Workflow [smoke.yml](.github/workflows/smoke.yml) định nghĩa hai nhóm kiể
 | Triệu chứng | Cách kiểm tra / xử lý |
 | --- | --- |
 | Không kết nối được Docker daemon | Bật Docker Desktop/Engine, chọn Linux containers, kiểm tra `docker version` |
-| Không có `Dockerfile` sau clone | Checkout nhánh/tag chứa bản Docker đã được bàn giao; nhánh chỉ có ở máy maintainer cần được công bố trước |
+| Không có `Dockerfile` sau clone | Kiểm tra đúng repository, nhánh `main` và thư mục gốc dự án; cập nhật mã nguồn nếu đang dùng bản sao cũ |
 | Thiếu secret hoặc bootstrap thoát `1` | Đối chiếu `.env.example`, kiểm tra token khác nhau và đủ độ dài; xem `docker compose logs bootstrap` |
 | Cổng 8000/5432 đã được sử dụng | Đổi `API_PORT`/`POSTGRES_PORT`, chạy lại `up -d`; kết nối trong Docker vẫn là `db:5432` |
 | Database lỗi xác thực sau khi sửa `.env` | Dùng credential đúng của volume đã khởi tạo; thay mật khẩu trong PostgreSQL theo quy trình quản trị, không xóa volume để khắc phục |
